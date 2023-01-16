@@ -1,4 +1,4 @@
-package esop_trading
+package com.example
 
 import io.micronaut.runtime.Micronaut.run
 fun main(args: Array<String>) {
