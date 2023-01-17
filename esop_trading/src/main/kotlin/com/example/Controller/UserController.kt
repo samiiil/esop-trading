@@ -1,5 +1,8 @@
 package com.example.controller
 
+import com.example.Inventory
+import com.example.User
+import com.example.Wallet
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Post
@@ -11,9 +14,9 @@ import io.micronaut.json.tree.JsonObject
 class UserController {
 
     companion object {
-        var users : HashMap<String, JsonObject> = HashMap<String, JsonObject> ()
+        var users : HashMap<String, User> = HashMap<String, User> ()
         var emails = mutableSetOf<String>()
-        var phonenos = mutableSetOf<String>()
+        var phonenos = mutableSetOf<Number>()
     }
 
     @Post("/user/register")
@@ -23,7 +26,7 @@ class UserController {
         println(body.get("firstName").stringValue.trim())
         var firstName = body.get("firstName").stringValue.trim()
         var lastName = body.get("lastName").stringValue.trim()
-        var phoneNumber = body.get("phoneNumber").stringValue.trim()
+        var phoneNumber = body.get("phoneNumber").numberValue
         var email = body.get("email").stringValue.trim()
         var username = body.get("username").stringValue.trim()
 
@@ -44,7 +47,10 @@ class UserController {
         }
         if(flg==0){
             error.put("msg","User created successfully!!")
-            users.put(username,body)
+            var inventory = Inventory(0,0)
+            var wallet = Wallet(0,0)
+            var newuser = User(firstName,lastName,phoneNumber,email,username, inventory , wallet )
+            users.put(username,newuser)
             emails.add(email)
             phonenos.add(phoneNumber)
         }

@@ -5,5 +5,7 @@ data class User(
     var lastName : String,
     var phoneNumber : Number,
     var email : String,
-    var username : String
+    var username : String,
+    var inventory: Inventory,
+    var wallet: Wallet
 )
