@@ -4,7 +4,7 @@ import com.example.Inventory
 import com.example.Order
 import com.example.User
 import com.example.Wallet
-import com.example.controller.UserController
+import com.example.Controller.UserController
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Post

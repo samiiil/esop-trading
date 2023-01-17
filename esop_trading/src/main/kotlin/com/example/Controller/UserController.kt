@@ -49,7 +49,7 @@ class UserController {
         }
         if(flg==0){
             error.put("msg","User created successfully!!")
-            var inventory = Inventory(20,0)
+            var inventory = Inventory(0,0)
             var wallet = Wallet(100,0)
             var newuser = User(firstName,lastName,phoneNumber,email,username, inventory , wallet )
             users.put(username,newuser)
