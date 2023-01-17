@@ -61,4 +61,30 @@ class UserController {
 
     }
 
+    @Post("/user/{userName}/inventory")
+    fun addInventory(userName: String, quantity: Int): HashMap<String, Any> {
+        var response: HashMap<String, Any> = HashMap<String, Any>()
+        var errors = ArrayList<String>()
+
+        if (!users.containsKey(userName)) {
+            errors.add("invalid username: user not found")
+        }
+
+        if (quantity <= 0) {
+            errors.add("invalid quantity: quantity has to be a positive integer")
+         }
+
+        if (errors.size != 0) {
+            response["errors"] = errors
+            return response
+        }
+
+
+        var user = users[userName]!!
+        user.inventory.free += quantity
+
+        response["message"] = "${quantity} ESOPs added to account"
+
+        return response
+    }
 }
