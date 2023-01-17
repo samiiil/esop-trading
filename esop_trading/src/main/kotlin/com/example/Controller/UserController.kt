@@ -1,4 +1,4 @@
-package com.example.controller
+package com.example.Controller
 
 import com.example.Inventory
 import com.example.User
@@ -16,17 +16,17 @@ class UserController {
     companion object {
         var users : HashMap<String, User> = HashMap<String, User> ()
         var emails = mutableSetOf<String>()
-        var phonenos = mutableSetOf<Number>()
+        var phonenos = mutableSetOf<String>()
     }
 
     @Post("/user/register")
     fun register(@Body body:JsonObject):HashMap<String,String>{
         var user = body.toString().trim()
-        println(body)
-        println(body.get("firstName").stringValue.trim())
+//        println(body)
+//        println(body.get("firstName").stringValue.trim())
         var firstName = body.get("firstName").stringValue.trim()
         var lastName = body.get("lastName").stringValue.trim()
-        var phoneNumber = body.get("phoneNumber").numberValue
+        var phoneNumber = body.get("phoneNumber").stringValue.trim()
         var email = body.get("email").stringValue.trim()
         var username = body.get("username").stringValue.trim()
 
@@ -55,7 +55,7 @@ class UserController {
             phonenos.add(phoneNumber)
         }
 
-        println(emails)
+//        println(emails)
 
         return error
 
