@@ -1,80 +1,297 @@
-//package com.example.Controller
-//
-//import com.example.Order
-//import com.example.controller.UserController
-//import io.micronaut.http.annotation.Body
-//import io.micronaut.http.annotation.Controller
-//import io.micronaut.http.annotation.Post
-//import io.micronaut.json.tree.JsonObject
-//import java.util.*
-//import kotlin.Comparator
-//import kotlin.collections.HashMap
-//
-//@Controller("/")
-//class CreateOrderController {
-//
-//    companion object {
-//        var orderId : Int = 1
-//        var orders : HashMap<String, ArrayList<Order>> = HashMap<String, ArrayList<Order>> ()
-//        val compareByDesc: Comparator<Pair<Int, Order>> = compareByDescending { it.first }
-//        val buyqueue = PriorityQueue<Pair<Int,Order>>(compareByDesc)
-//        val sellqueue = PriorityQueue<Pair<Int,Order>>(compareByDesc)
-//
-//    }
-//
-//    @Post("/user/{username}/order")
-//    fun createOrder(username:String,@Body body:JsonObject){
-//
-//        var quantity = body.get("quantity").stringValue.trim()
-//        var type = body.get("type").stringValue.trim()
-//        var price = body.get("price").stringValue.trim().toInt()
-//
-//
-//
-////        val map = nums.groupBy { it }
-////        val compareByDesc: Comparator<Pair<Int, Int>> = compareByDescending { it.first }
-////        val pQueue = PriorityQueue<Pair<Int,Int>>(compareByDesc)
-////
-////        map.forEach { (key, value) ->
-////            pQueue.add(value.size to key)
-////        }
-////
-////        val answer = IntArray(k){0}
-////        var i = 0
-////        while(i<k && pQueue.isNotEmpty()) {
-////            answer[i] = pQueue.remove().second
-////            i++
-////        }
-//
-//
-//        if(!UserController.users.containsKey(username)){
-//
-//        }
-//
-//        var user = UserController.users[username]
-//        var neworder = Order(orderId,'U', quantity,user)
-//        if(type=="BUY"){
-//            var i = 0
-//            var totquantity = quantity.toInt()
-//            while(i< sellqueue.size && sellqueue.isNotEmpty()) {
-//                var first = sellqueue.poll()
-//                if(first.first > price)break
-//
-//                if(totquantity>first.second.quantity){
-//                    totquantity-=first.second.quantity
-//                    first.second.status = 'F'
-//                    orders[first.second.user.username]?.add(first.second)
-//
-//                }
-//
-//                i++
-//            }
-//        }
-//        else{
-//
-//        }
-//
-//
-//    }
-//
-//}
+package com.example.Controller
+
+import com.example.Inventory
+import com.example.Order
+import com.example.User
+import com.example.Wallet
+import com.example.controller.UserController
+import io.micronaut.http.annotation.Body
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Post
+import io.micronaut.json.tree.JsonObject
+import java.util.*
+import kotlin.Comparator
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+
+@Controller("/")
+class CreateOrderController {
+
+    companion object {
+        var orderId : Number = 4
+        var orders : HashMap<String, ArrayList<Order>> = HashMap<String, ArrayList<Order>> ()
+        val compareByDesc: Comparator<Pair<Int, Order>> = compareByDescending { it.first }
+        val buyqueue = PriorityQueue<Pair<Int,Order>>(compareByDesc)
+        val compareByAsc: Comparator<Pair<Int, Order>> = compareByDescending { -1 * it.first }
+        val sellqueue = PriorityQueue<Pair<Int,Order>>(compareByAsc)
+
+    }
+
+    fun addBuyOrder(order: Order){
+        var buyer = order.user
+
+
+//        println("wallet free: " + buyer.wallet.free)
+//        println("wallet locked: " + buyer.wallet.locked)
+
+        if (order.status == 'F') {
+            buyer.wallet.locked -= order.totalPrice
+            buyer.wallet.free += order.totalPrice
+
+            return
+        }
+
+
+        if(!sellqueue.isNotEmpty() || sellqueue.first().first > order.price) {
+            buyqueue.add(order.price to order)
+            return
+        }
+
+        var sellOrder = sellqueue.poll().second
+        var seller = sellOrder.user
+
+        // partial/full buy order case
+        if(order.quantity >= sellOrder.quantity){
+
+            // add to seller order history
+            sellOrder.status = 'F'
+
+            if (orders.get(sellOrder.user.username) == null) {
+                orders.put(sellOrder.user.username, arrayListOf())
+            }
+
+            orders[sellOrder.user.username]!!.add(sellOrder)
+
+            // add to buyer order history
+            order.status = 'P'
+            if (order.quantity == sellOrder.quantity) {
+                order.status = 'F'
+            }
+            var newOrder = order.copy()
+            order.quantity = sellOrder.quantity
+            if (orders[buyer.username] == null) {
+                orders[buyer.username] = arrayListOf()
+            }
+            orders[buyer.username]?.add(order)
+
+
+            newOrder.quantity -= sellOrder.quantity
+
+            // inventory
+            seller.inventory.locked -= sellOrder.quantity
+            buyer.inventory.free += sellOrder.quantity
+
+            //wallet
+            var totalBoughtPrice = sellOrder.quantity * sellOrder.price
+            seller.wallet.free += totalBoughtPrice
+            buyer.wallet.locked -= totalBoughtPrice
+
+            newOrder.totalPrice -= totalBoughtPrice
+
+
+            addBuyOrder(newOrder)
+        } else {
+            // partial sell order
+
+            // add to seller order history
+            order.status = 'F'
+            if (orders.get(order.user.username) == null) {
+                orders.put(order.user.username, arrayListOf<Order>())
+            }
+            orders[order.user.username]!!.add(order)
+
+            // add to buyer order history
+            sellOrder.status = 'P'
+
+            var newOrder = sellOrder.copy()
+
+            sellOrder.quantity = order.quantity
+
+            if (orders[seller.username] == null) {
+                orders[seller.username] = arrayListOf()
+            }
+            orders[seller.username]?.add(sellOrder)
+
+
+            newOrder.quantity -= order.quantity
+
+
+            // inventory
+            seller.inventory.locked -= order.quantity
+            buyer.inventory.free += order.quantity
+
+            //wallet
+            var totalBoughtPrice = sellOrder.quantity * sellOrder.price
+            seller.wallet.free += totalBoughtPrice
+            buyer.wallet.locked -= totalBoughtPrice
+
+            order.totalPrice -= totalBoughtPrice
+
+            sellqueue.add(sellOrder.price to newOrder)
+            addBuyOrder(order)
+        }
+    }
+
+
+    fun addSellOrder(order: Order){
+        var seller = order.user
+
+
+//        println("wallet free: " + buyer.wallet.free)
+//        println("wallet locked: " + buyer.wallet.locked)
+
+        if (order.status == 'F') {
+            return
+        }
+
+
+        if(!buyqueue.isNotEmpty() || buyqueue.first().first < order.price) {
+            buyqueue.add(order.price to order)
+            return
+        }
+
+        var sellOrder = sellqueue.poll().second
+        var seller = sellOrder.user
+
+        // partial/full buy order case
+        if(order.quantity >= sellOrder.quantity){
+
+            // add to seller order history
+            sellOrder.status = 'F'
+
+            if (orders.get(sellOrder.user.username) == null) {
+                orders.put(sellOrder.user.username, arrayListOf())
+            }
+
+            orders[sellOrder.user.username]!!.add(sellOrder)
+
+            // add to buyer order history
+            order.status = 'P'
+            if (order.quantity == sellOrder.quantity) {
+                order.status = 'F'
+            }
+            var newOrder = order.copy()
+            order.quantity = sellOrder.quantity
+            if (orders[buyer.username] == null) {
+                orders[buyer.username] = arrayListOf()
+            }
+            orders[buyer.username]?.add(order)
+
+
+            newOrder.quantity -= sellOrder.quantity
+
+            // inventory
+            seller.inventory.locked -= sellOrder.quantity
+            buyer.inventory.free += sellOrder.quantity
+
+            //wallet
+            var totalBoughtPrice = sellOrder.quantity * sellOrder.price
+            seller.wallet.free += totalBoughtPrice
+            buyer.wallet.locked -= totalBoughtPrice
+
+            newOrder.totalPrice -= totalBoughtPrice
+
+
+            addBuyOrder(newOrder)
+        } else {
+            // partial sell order
+
+            // add to seller order history
+            order.status = 'F'
+            if (orders.get(order.user.username) == null) {
+                orders.put(order.user.username, arrayListOf<Order>())
+            }
+            orders[order.user.username]!!.add(order)
+
+            // add to buyer order history
+            sellOrder.status = 'P'
+
+            var newOrder = sellOrder.copy()
+
+            sellOrder.quantity = order.quantity
+
+            if (orders[seller.username] == null) {
+                orders[seller.username] = arrayListOf()
+            }
+            orders[seller.username]?.add(sellOrder)
+
+
+            newOrder.quantity -= order.quantity
+
+
+            // inventory
+            seller.inventory.locked -= order.quantity
+            buyer.inventory.free += order.quantity
+
+            //wallet
+            var totalBoughtPrice = sellOrder.quantity * sellOrder.price
+            seller.wallet.free += totalBoughtPrice
+            buyer.wallet.locked -= totalBoughtPrice
+
+            order.totalPrice -= totalBoughtPrice
+
+            sellqueue.add(sellOrder.price to newOrder)
+            addBuyOrder(order)
+        }
+    }
+
+
+
+    @Post("/user/{username}/order")
+    fun createOrder(username:String,@Body body:JsonObject) : HashMap<String, Any> {
+
+        var quantity = body.get("quantity").intValue
+        var type = body.get("type").stringValue.trim()
+        var price = body.get("price").intValue
+
+        var seller = User("ksjhdfkjs","sfd",37628,"sdjfhks", "sdhfs",
+            Inventory(0, 23), Wallet(0, 0))
+        var o1 = Order(1, 'U',  20, 5, 100, seller)
+        var o2 = Order(1, 'U', 3, 6, 18, seller)
+        sellqueue.add(5 to o1)
+        sellqueue.add(6 to o2)
+        UserController.users.put(seller.username, seller)
+        orders[seller.username] = arrayListOf()
+
+        if(!UserController.users.containsKey(username)){
+
+        }
+
+        var user = UserController.users[username]!!
+
+
+        var order = Order(orderId,'U', quantity, price, price*quantity, user)
+        if(type=="BUY") {
+            if (user.wallet.free < (order.totalPrice)) {
+
+            }
+
+            order.user.wallet.free -= (order.totalPrice)
+            order.user.wallet.locked += (order.totalPrice)
+
+            addBuyOrder(order)
+        }
+        else {
+
+            if(user.inventory.free < quantity){
+                //ERRRROR
+            }
+
+            order.user.inventory.free -= (order.quantity)
+            order.user.inventory.locked += (order.quantity)
+
+            addSellOrder(order)
+        }
+
+        var response = HashMap<String, Any>()
+        response["buyer"] = order.user
+        response["seller"] = seller
+
+        response["orderHistBuyer"] = orders[order.user.username]!!.toArray()
+
+        response["orderHistSell"] = orders[seller.username]!!.toArray()
+
+        return response
+    }
+
+}

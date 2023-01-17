@@ -1,8 +1,10 @@
 package com.example
 
 data class Order(
-    var orderid:Int,
+    var orderid:Number,
     var status:Char,
     var quantity:Int,
-    var user: User
+    var price: Int,
+    var totalPrice: Int,
+    var user: User,
 )

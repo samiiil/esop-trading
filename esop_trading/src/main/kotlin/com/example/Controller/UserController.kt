@@ -19,6 +19,8 @@ class UserController {
         var phonenos = mutableSetOf<String>()
     }
 
+
+
     @Post("/user/register")
     fun register(@Body body:JsonObject):HashMap<String,String>{
         var user = body.toString().trim()
@@ -48,7 +50,7 @@ class UserController {
         if(flg==0){
             error.put("msg","User created successfully!!")
             var inventory = Inventory(0,0)
-            var wallet = Wallet(0,0)
+            var wallet = Wallet(100,0)
             var newuser = User(firstName,lastName,phoneNumber,email,username, inventory , wallet )
             users.put(username,newuser)
             emails.add(email)
