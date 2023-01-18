@@ -1,3 +1,5 @@
+package Models
+import Services.Util
 class User(val userName: String,
            val firstName: String,
            val lastName: String,

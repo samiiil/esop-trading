@@ -1,3 +1,4 @@
+package Models
 class Wallet {
     private var freeMoney: Long=0L;
     private var lockedMoney: Long=0L;

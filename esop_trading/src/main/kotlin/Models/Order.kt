@@ -1,3 +1,4 @@
+package Models
 class Order (val userName: String,
              val orderId: Long,
              val orderQuantity: Long,

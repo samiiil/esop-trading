@@ -1,7 +1,7 @@
-package com.example.Controller
+package Controller
 
-import Util
-import Util.*;
+import Models.Data
+import Services.Util
 import io.micronaut.http.HttpStatus
 
 import io.micronaut.http.annotation.Body

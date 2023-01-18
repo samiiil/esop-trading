@@ -1,3 +1,4 @@
+package Models
 class Inventory {
     private var freeInventory: Long=0L;
     private var lockedInventory: Long=0L;

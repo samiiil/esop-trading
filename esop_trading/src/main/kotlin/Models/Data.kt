@@ -1,3 +1,6 @@
+package Models
+import Services.BuyOrderingComparator
+import Services.SellOrderingComparator
 import java.util.PriorityQueue
 
 class Data {
