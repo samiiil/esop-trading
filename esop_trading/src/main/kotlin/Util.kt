@@ -85,7 +85,7 @@ class Util {
                                 val orderExecutionLog = OrderExecutionLogs(generateOrderExecutionId(),orderExecutionPrice,buyQuantity)
                                 currentBuyOrder.addOrderExecutionLogs(orderExecutionLog)
                                 if(currentBuyOrder.orderPrice > orderExecutionPrice){
-                                    val amountToBeMovedFromLockedWalletToFreeWallet = (currentBuyOrder.orderPrice - orderExecutionPrice) * sellQuantity
+                                    val amountToBeMovedFromLockedWalletToFreeWallet = (currentBuyOrder.orderPrice - orderExecutionPrice) * buyQuantity
                                     buyerAccount.wallet.updateLockedMoney(amountToBeMovedFromLockedWalletToFreeWallet)
                                     buyerAccount.wallet.addMoneyToWallet(amountToBeMovedFromLockedWalletToFreeWallet)
                                 }
