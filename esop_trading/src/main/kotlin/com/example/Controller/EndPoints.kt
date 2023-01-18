@@ -146,4 +146,21 @@ class EndPoints {
         response = mapOf("message" to result);
         return HttpResponse.status<Any>(HttpStatus.OK).body(response);
     }
+
+    @Get("/user/{user_name}/orderHistory")
+    fun orderHistory(user_name: String) : HttpResponse<*>{
+
+        var errorMessages : ArrayList<String> = ArrayList<String> ();
+
+        val response: Map<String,*>;
+
+        if(Util.validateUser(user_name) == false){
+            errorMessages.add("Username does not exists.");
+            response= mapOf("error" to errorMessages);
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        response = Data.userList.get(user_name)!!.getOrderDetails();
+        return HttpResponse.status<Any>(HttpStatus.OK).body(response);
+    }
 }
