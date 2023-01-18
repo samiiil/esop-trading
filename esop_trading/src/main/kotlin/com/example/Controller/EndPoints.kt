@@ -116,4 +116,34 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.OK).body(response);
     }
 
+    @Post("/user/{user_name}/createOrder")
+    fun createOrder(user_name: String, @Body body:JsonObject) : HttpResponse<*>{
+
+        var errorMessages : ArrayList<String> = ArrayList<String> ();
+
+        val response: Map<String,*>;
+
+        if(Util.validateUser(user_name) == false){
+            errorMessages.add("Username does not exists.");
+            response= mapOf("error" to errorMessages);
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        //Input Parsing
+        val orderQuantity: Long = body.get("quantity").bigIntegerValue.toLong();
+        val orderType: String = body.get("type").stringValue.trim();
+        val orderAmount: Long = body.get("price").bigIntegerValue.toLong();
+
+        //Create Order
+        val result = Data.userList.get(user_name)!!.addOrder(orderQuantity,orderType,orderAmount);
+
+        if (result != "Order Placed Successfully."){
+            errorMessages.add(result);
+            response= mapOf("error" to errorMessages);
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        response = mapOf("message" to result);
+        return HttpResponse.status<Any>(HttpStatus.OK).body(response);
+    }
 }
