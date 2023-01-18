@@ -48,11 +48,13 @@ class Util {
 
         fun processOrder(){
             if(!Data.sellList.isEmpty() && !Data.buyList.isEmpty()){
-                val buyOrders = Data.buyList.iterator()
                 val sellOrders = Data.sellList.iterator()
-
                 while(sellOrders.hasNext()){
                     val currentSellOrder = sellOrders.next()
+                    if ((!Data.buyList.isEmpty() && currentSellOrder.orderPrice > Data.buyList.peek().orderPrice) || Data.buyList.isEmpty()){
+                        break;
+                    }
+                    val buyOrders = Data.buyList.iterator()
                     while(buyOrders.hasNext()){
                         val currentBuyOrder = buyOrders.next()
                         if(currentSellOrder.orderPrice <= currentBuyOrder.orderPrice){
