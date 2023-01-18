@@ -20,7 +20,7 @@ class Wallet {
     fun moveFreeMoneyToLockedMoney(amountToBeLocked:Long): String {
         if(this.freeMoney >= amountToBeLocked){
             this.freeMoney = this.freeMoney - amountToBeLocked;
-            this.lockedMoney = amountToBeLocked;
+            this.lockedMoney = this.lockedMoney + amountToBeLocked;
             return "Success";
         }else{
             return "Insufficient balance in wallet.";
