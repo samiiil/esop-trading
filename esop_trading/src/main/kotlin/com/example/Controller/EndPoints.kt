@@ -89,4 +89,31 @@ class EndPoints {
         response = mapOf("message" to "$quantityToBeAdded ESOPs added to account");
         return HttpResponse.status<Any>(HttpStatus.OK).body(response);
     }
+    @Get("/user/{user_name}/accountInformation")
+    fun accountInformation(user_name: String) : HttpResponse<*> {
+
+        var errorMessages : ArrayList<String> = ArrayList<String> ();
+
+        val response: Map<String,*>;
+        if(Util.validateUser(user_name) == false){
+            errorMessages.add("Username does not exists.");
+            response= mapOf("error" to errorMessages);
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        response = mapOf("FirstName" to Data.userList.get(user_name)!!.firstName,
+            "LastName" to Data.userList.get(user_name)!!.lastName,
+            "Phone" to Data.userList.get(user_name)!!.phoneNumber,
+            "Email" to Data.userList.get(user_name)!!.emailId,
+            "Inventory" to mapOf<String,Long>(
+                "free" to Data.userList.get(user_name)!!.account.inventory.getFreeInventory(),
+                "locked" to Data.userList.get(user_name)!!.account.inventory.getLockedInventory()
+            ),
+            "Wallet" to mapOf<String,Long>(
+                "free" to Data.userList.get(user_name)!!.account.wallet.getFreeMoney(),
+                "locked" to Data.userList.get(user_name)!!.account.wallet.getLockedMoney()
+            ));
+        return HttpResponse.status<Any>(HttpStatus.OK).body(response);
+    }
+
 }
