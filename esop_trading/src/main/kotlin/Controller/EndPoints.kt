@@ -1,6 +1,7 @@
 package Controller
 
 import Models.Data
+import Models.RegisterInput
 import Services.Util
 import io.micronaut.http.HttpStatus
 
@@ -14,30 +15,30 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.validation.Validated
 import java.lang.Exception
 import io.micronaut.http.annotation.Error
+import io.micronaut.http.hateoas.JsonError
+import javax.validation.Valid
 
-@Validated
 @Controller("/")
 class EndPoints {
 
     @Post("/user/register")
-    fun register(@Body body: JsonObject): HttpResponse<*> {
+    fun register(@Body body: RegisterInput): HttpResponse<*> {
         val errorList = arrayListOf<String>()
         //Input Parsing
-        for(error in Util.validateBody(body)){
-            errorList.add(error)
-
-        }
+//        for(error in Util.validateBody(body)){
+//            errorList.add(error)
+//        }
         if(errorList.isNotEmpty()){
             val response: Map<String, *>;
             response = mapOf("error" to errorList);
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        val firstName: String = body.get("firstName")?.stringValue?.trim().toString()
-        val lastName: String = body.get("lastName")?.stringValue?.trim().toString()
-        val phoneNumber: String = body.get("phoneNumber")?.stringValue?.trim().toString()
-        val email: String = body.get("email")?.stringValue?.trim().toString()
-        val username:String = body.get("username")?.stringValue?.trim().toString()
+        val firstName: String = body.firstName
+        val lastName: String = body.lastName
+        val phoneNumber: String = body.phoneNumber
+        val email: String = body.email
+        val username:String = body.username
 
         if(firstName.isEmpty())
             println("first name is null")
@@ -192,9 +193,9 @@ class EndPoints {
     }
 
     @Error
-    fun handleError(): MutableHttpResponse<Any> {
-        val response: Map<String,*>;
-        return HttpResponse.serverError<Any>("Wrong url")
+    fun handleError(): HttpResponse<JsonError>{
+        val error : JsonError = JsonError("Invalid JSON Input, properties missing")
+        return HttpResponse.serverError(error)
     }
 
 
