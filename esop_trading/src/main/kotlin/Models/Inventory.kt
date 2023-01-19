@@ -6,7 +6,7 @@ class Inventory {
     private var freePerformanceInventory: Long=0L;
     private var lockedPerformanceInventory: Long= 0L;
 
-    fun addEsopToInventory(esopsToBeAdded:Long){
+    fun addEsopToInventory(esopsToBeAdded:Long,type:String="NON-PERFORMANCE"){
         if(type=="PERFORMANCE")
         {
             this.freePerformanceInventory=this.freePerformanceInventory+esopsToBeAdded;
@@ -43,23 +43,25 @@ class Inventory {
         this.lockedPerformanceInventory=this.lockedPerformanceInventory-inventoryToBeUpdated
     }
     fun moveFreeInventoryToLockedInventory(esopsToBeLocked:Long): String {
-        if (this.freePerformanceInventory >= esopsToBeLocked) {
-            this.freePerformanceInventory = this.freePerformanceInventory - esopsToBeLocked;
-            this.lockedPerformanceInventory = this.lockedPerformanceInventory + esopsToBeLocked;
+
+        if (this.freeInventory >= esopsToBeLocked) {
+            this.freeInventory = this.freeInventory - esopsToBeLocked;
+            this.lockedInventory = this.lockedInventory + esopsToBeLocked;
             return "Success";
         } else {
             return "Insufficient ESOPs in Inventory.";
         }
 
     }
-        fun moveFreePerformanceInventoryToLockedInventory(esopsToBeLocked: Long): String{
-            if (this.freeInventory >= esopsToBeLocked) {
-                this.freeInventory = this.freeInventory - esopsToBeLocked;
-                this.lockedInventory = this.lockedInventory + esopsToBeLocked;
+        fun moveFreePerformanceInventoryToLockedPerformanceInventory(esopsToBeLocked: Long): String{
+            if (this.freePerformanceInventory >= esopsToBeLocked) {
+                this.freePerformanceInventory = this.freePerformanceInventory - esopsToBeLocked;
+                this.lockedPerformanceInventory = this.lockedPerformanceInventory + esopsToBeLocked;
                 return "Success";
             } else {
                 return "Insufficient ESOPs in Inventory.";
             }
+
 
         }
 
