@@ -74,19 +74,25 @@ class EndPoints {
     fun addToInventory(user_name: String, @Body body: JsonObject): HttpResponse<*> {
 
         //Input Parsing
-        val quantityToBeAdded = body.get("quantity").bigIntegerValue.toLong()
+        val quantityToBeAdded = body.get("quantity")?.bigIntegerValue?.toLong()?: 0
+        val typeOfESOP = body.get("type")?.stringValue?.uppercase()?: ""
 
         var errorMessages: ArrayList<String> = ArrayList<String>();
 
         val response: Map<String, *>;
-        if (Util.validateUser(user_name) == false) {
+        if (!Util.validateUser(user_name))
             errorMessages.add("Username does not exists.");
-            response = mapOf("error" to errorMessages);
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+        if(quantityToBeAdded <= 0 || quantityToBeAdded > 1000)
+            errorMessages.add("Invalid quantity of ESOPs")
+        if(typeOfESOP !in arrayOf("PERFORMANCE","NON-PERFORMANCE"))
+            errorMessages.add("Invalid ESOP type")
+        if(errorMessages.size > 0){
+            response = mapOf("error" to errorMessages)
+            return HttpResponse.badRequest(response)
         }
+        Data.userList[user_name]!!.account.inventory.addEsopToInventory(quantityToBeAdded, typeOfESOP)
 
-        Data.userList.get(user_name)!!.account.inventory.addEsopToInventory(quantityToBeAdded);
-        response = mapOf("message" to "$quantityToBeAdded ESOPs added to account");
+        response = mapOf("message" to "$quantityToBeAdded $typeOfESOP ESOPs added to account");
         return HttpResponse.status<Any>(HttpStatus.OK).body(response);
     }
     @Get("/user/{user_name}/accountInformation")
