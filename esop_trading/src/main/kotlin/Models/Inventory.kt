@@ -1,11 +1,12 @@
 package Models
 class Inventory {
+    private var type: String="";
     private var freeInventory: Long=0L;
     private var lockedInventory: Long=0L;
     private var freePerformanceInventory: Long=0L;
     private var lockedPerformanceInventory: Long= 0L;
 
-    fun addEsopToInventory(esopsToBeAdded:Long, type:String="NON-PERFORMANCE"){
+    fun addEsopToInventory(esopsToBeAdded:Long){
         if(type=="PERFORMANCE")
         {
             this.freePerformanceInventory=this.freePerformanceInventory+esopsToBeAdded;
@@ -49,7 +50,17 @@ class Inventory {
         } else {
             return "Insufficient ESOPs in Inventory.";
         }
-    }
 
+    }
+        fun moveFreePerformanceInventoryToLockedInventory(esopsToBeLocked: Long): String{
+            if (this.freeInventory >= esopsToBeLocked) {
+                this.freeInventory = this.freeInventory - esopsToBeLocked;
+                this.lockedInventory = this.lockedInventory + esopsToBeLocked;
+                return "Success";
+            } else {
+                return "Insufficient ESOPs in Inventory.";
+            }
+
+        }
 
 }
