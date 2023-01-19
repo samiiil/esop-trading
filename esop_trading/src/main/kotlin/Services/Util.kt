@@ -10,7 +10,7 @@ import java.lang.Exception
 
 class Util {
     companion object{
-
+        const val MAX_AMOUNT = 1000000000
         fun validateBody(body: JsonObject): ArrayList<String>{
             val errorList = arrayListOf<String>()
 

@@ -8,10 +8,12 @@ import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Post
 import io.micronaut.json.tree.JsonObject
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.validation.Validated
 import java.lang.Exception
+import io.micronaut.http.annotation.Error
 
 @Validated
 @Controller("/")
@@ -72,7 +74,7 @@ class EndPoints {
         try {
             amountToBeAdded = body.get("amount").bigIntegerValue.toLong()
         }catch (e: Exception){
-            errorMessages.add("Amount is invalid")
+            errorMessages.add("Amount value is not integer")
         }
 
 
@@ -80,6 +82,9 @@ class EndPoints {
         if (!Util.validateUser(user_name)) {
             errorMessages.add("Username does not exists.");
 
+        }
+        if(amountToBeAdded <= 0 || amountToBeAdded > Util.MAX_AMOUNT){
+            errorMessages.add("Amount is out of range 0 ${Util.MAX_AMOUNT}")
         }
 
         if(errorMessages.isNotEmpty()){
@@ -176,7 +181,7 @@ class EndPoints {
 
         val response: Map<String,*>;
 
-        if(Util.validateUser(user_name) == false){
+        if(!Util.validateUser(user_name)){
             errorMessages.add("Username does not exists.");
             response= mapOf("error" to errorMessages);
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
@@ -185,4 +190,12 @@ class EndPoints {
         response = Data.userList.get(user_name)!!.getOrderDetails();
         return HttpResponse.status<Any>(HttpStatus.OK).body(response);
     }
+
+    @Error
+    fun handleError(): MutableHttpResponse<Any> {
+        val response: Map<String,*>;
+        return HttpResponse.serverError<Any>("Wrong url")
+    }
+
+
 }
