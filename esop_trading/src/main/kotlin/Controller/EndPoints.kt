@@ -66,20 +66,28 @@ class EndPoints {
 
     @Post("/user/{user_name}/addToWallet")
     fun addToWallet(user_name: String, @Body body: JsonObject): HttpResponse<*> {
-
-        //Input Parsing
-        val amountToBeAdded = body.get("amount").bigIntegerValue.toLong()
-
         var errorMessages: ArrayList<String> = ArrayList<String>();
+        //Input Parsing
+        var amountToBeAdded: Long = 0
+        try {
+            amountToBeAdded = body.get("amount").bigIntegerValue.toLong()
+        }catch (e: Exception){
+            errorMessages.add("Amount is invalid")
+        }
+
 
         val response: Map<String, *>;
-        if (Util.validateUser(user_name) == false) {
+        if (!Util.validateUser(user_name)) {
             errorMessages.add("Username does not exists.");
+
+        }
+
+        if(errorMessages.isNotEmpty()){
             response = mapOf("error" to errorMessages);
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        Data.userList.get(user_name)!!.account.wallet.addMoneyToWallet(amountToBeAdded);
+        Data.userList[user_name]!!.account.wallet.addMoneyToWallet(amountToBeAdded);
         response = mapOf("message" to "$amountToBeAdded amount added to account");
         return HttpResponse.status<Any>(HttpStatus.OK).body(response);
     }

@@ -53,7 +53,7 @@ class Util {
         fun validateNames(name: String, type: String): ArrayList<String>{
             val errorList = arrayListOf<String>()
 
-            if(name.matches(Regex("[A-Za-z]+"))){
+            if(!name.matches(Regex("[A-Za-z]+"))){
                 errorList.add("$type should only contain characters")
             }
             return errorList
@@ -68,7 +68,7 @@ class Util {
         fun validateEmailIds(emailId: String): ArrayList<String>{
             val errorList = arrayListOf<String>()
             //val pattern = Regex("(?:[a-z0-9!#\$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#\$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])\n")
-            if(!emailId.matches(Regex("^[A-Za-z](.*)([@]{1})(.{1,})(\\\\.)(.{1,})"))){
+            if(!emailId.matches(Regex("^[a-zA-Z0-9.!#\$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*\$"))){
                     errorList.add("Invalid email address")
             }
 
@@ -85,7 +85,7 @@ class Util {
                 errorList.add("Phone number already exists")
             }
 
-            if(phoneNumber.length != 10 || phoneNumber.matches(Regex("[0-9]+"))){
+            if(phoneNumber.length != 10 || !phoneNumber.matches(Regex("[0-9]+"))){
                 errorList.add("Invalid phone number")
             }
             return errorList
