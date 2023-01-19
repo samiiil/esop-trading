@@ -105,13 +105,20 @@ class EndPoints {
             "LastName" to Data.userList.get(user_name)!!.lastName,
             "Phone" to Data.userList.get(user_name)!!.phoneNumber,
             "Email" to Data.userList.get(user_name)!!.emailId,
-            "Inventory" to mapOf<String,Long>(
-                "free" to Data.userList.get(user_name)!!.account.inventory.getFreeInventory(),
-                "locked" to Data.userList.get(user_name)!!.account.inventory.getLockedInventory()
-            ),
             "Wallet" to mapOf<String,Long>(
                 "free" to Data.userList.get(user_name)!!.account.wallet.getFreeMoney(),
                 "locked" to Data.userList.get(user_name)!!.account.wallet.getLockedMoney()
+            ),
+            "Inventory" to arrayListOf<Any>(
+                mapOf(
+                    "type" to "PERFORMANCE",
+                    "free" to Data.userList.get(user_name)!!.account.inventory.getFreePerformanceInventory(),
+                    "locked" to Data.userList.get(user_name)!!.account.inventory.getLockedPerformanceInventory()
+                ),
+               mapOf(
+                   "type" to "NON-PERFORMANCE",
+                   "free" to Data.userList.get(user_name)!!.account.inventory.getFreeInventory(),
+                   "locked" to Data.userList.get(user_name)!!.account.inventory.getLockedInventory())
             ));
         return HttpResponse.status<Any>(HttpStatus.OK).body(response);
     }
