@@ -10,43 +10,57 @@ import io.micronaut.json.tree.JsonObject
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.validation.Validated
+import java.lang.Exception
 
+@Validated
 @Controller("/")
 class EndPoints {
 
     @Post("/user/register")
     fun register(@Body body: JsonObject): HttpResponse<*> {
-
+        val errorList = arrayListOf<String>()
         //Input Parsing
-        var firstName = body.get("firstName").stringValue.trim()
-        var lastName = body.get("lastName").stringValue.trim()
-        var phoneNumber = body.get("phoneNumber").stringValue.trim()
-        var email = body.get("email").stringValue.trim()
-        var username = body.get("username").stringValue.trim()
+        for(error in Util.validateBody(body)){
+            errorList.add(error)
 
+        }
+        if(errorList.isNotEmpty()){
+            val response: Map<String, *>;
+            response = mapOf("error" to errorList);
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        val firstName: String = body.get("firstName")?.stringValue?.trim().toString()
+        val lastName: String = body.get("lastName")?.stringValue?.trim().toString()
+        val phoneNumber: String = body.get("phoneNumber")?.stringValue?.trim().toString()
+        val email: String = body.get("email")?.stringValue?.trim().toString()
+        val username:String = body.get("username")?.stringValue?.trim().toString()
+
+        if(firstName.isEmpty())
+            println("first name is null")
+        println(username)
 
         var errorMessages: ArrayList<String> = ArrayList<String>();
 
-        if (Util.validateUser(username)) {
-            errorMessages.add("Username already exists.");
-        }
-        if (Util.validateEmailIds(email)) {
-            errorMessages.add("Email Id already exists.");
-        }
-        if (Util.validatePhoneNumber(phoneNumber)) {
-            errorMessages.add("Phone Number already exists.")
-        }
-        if (errorMessages.size == 0) {
+        for(error in Util.validateNames(firstName, "firstName")) errorList.add(error)
+        for(error in Util.validateNames(firstName, "lastName")) errorList.add(error)
+        for(error in Util.validateNames(firstName, "username")) errorList.add(error)
+
+        for(error in Util.validateEmailIds(email)) errorList.add(error)
+        for(error in Util.validatePhoneNumber(phoneNumber, errorList)) errorList.add(error)
+
+        if (errorList.isEmpty()) {
             Util.createUser(username, firstName, lastName, phoneNumber, email);
         }
 
         val response: Map<String, *>;
-        if (errorMessages.size > 0) {
-            response = mapOf("error" to errorMessages);
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+        return if (errorList.isNotEmpty()) {
+            response = mapOf("error" to errorList);
+            HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
         } else {
             response = mapOf("message" to "User created successfully!!");
-            return HttpResponse.status<Any>(HttpStatus.OK).body(response);
+            HttpResponse.status<Any>(HttpStatus.OK).body(response);
         }
     }
 
