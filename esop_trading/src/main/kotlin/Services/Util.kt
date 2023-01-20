@@ -3,6 +3,9 @@ import Models.Data
 import Models.User
 import Models.Order
 import Models.OrderExecutionLogs
+import kotlin.math.roundToLong
+import COMMISSION_FEE_PERCENTAGE
+import TOTAL_FEE_COLLECTED
 class Util {
     companion object{
         fun validateUser(userName: String):Boolean{
@@ -70,7 +73,8 @@ class Util {
                             if( sellQuantity < buyQuantity ){
                                 val orderExecutionPrice = currentSellOrder.orderPrice
                                 sellerAccount.inventory.updateLockedInventory(sellQuantity)
-                                sellerAccount.wallet.addMoneyToWallet((orderExecutionPrice*sellQuantity))
+                                sellerAccount.wallet.addMoneyToWallet((orderExecutionPrice*sellQuantity*(1-COMMISSION_FEE_PERCENTAGE*0.01)).roundToLong())
+                                TOTAL_FEE_COLLECTED += (orderExecutionPrice*sellQuantity*COMMISSION_FEE_PERCENTAGE*0.01).roundToLong()
                                 val orderExecutionLog = OrderExecutionLogs(generateOrderExecutionId(),orderExecutionPrice,sellQuantity)
                                 currentSellOrder.addOrderExecutionLogs(orderExecutionLog)
                                 //remove SellOrder From Priority Queue
@@ -91,6 +95,7 @@ class Util {
                                 buyerAccount.inventory.addEsopToInventory(buyQuantity)
                                 val orderExecutionLog = OrderExecutionLogs(generateOrderExecutionId(),orderExecutionPrice,buyQuantity)
                                 currentBuyOrder.addOrderExecutionLogs(orderExecutionLog)
+
                                 if(currentBuyOrder.orderPrice > orderExecutionPrice){
                                     val amountToBeMovedFromLockedWalletToFreeWallet = (currentBuyOrder.orderPrice - orderExecutionPrice) * buyQuantity
                                     buyerAccount.wallet.updateLockedMoney(amountToBeMovedFromLockedWalletToFreeWallet)
@@ -100,13 +105,15 @@ class Util {
                                 buyOrders.remove()
 
                                 sellerAccount.inventory.updateLockedInventory(buyQuantity)
-                                sellerAccount.wallet.addMoneyToWallet((orderExecutionPrice*buyQuantity))
+                                sellerAccount.wallet.addMoneyToWallet((orderExecutionPrice*buyQuantity*(1-COMMISSION_FEE_PERCENTAGE*0.01)).roundToLong())
+                                TOTAL_FEE_COLLECTED += (orderExecutionPrice*buyQuantity*COMMISSION_FEE_PERCENTAGE*0.01).roundToLong()
                                 currentSellOrder.addOrderExecutionLogs(orderExecutionLog)
                             }
                             else if( sellQuantity == buyQuantity ){
                                 val orderExecutionPrice = currentSellOrder.orderPrice
                                 sellerAccount.inventory.updateLockedInventory(sellQuantity)
-                                sellerAccount.wallet.addMoneyToWallet((sellQuantity*orderExecutionPrice))
+                                sellerAccount.wallet.addMoneyToWallet((orderExecutionPrice*sellQuantity*(1-COMMISSION_FEE_PERCENTAGE*0.01)).roundToLong())
+                                TOTAL_FEE_COLLECTED += (orderExecutionPrice*sellQuantity*COMMISSION_FEE_PERCENTAGE*0.01).roundToLong()
                                 val orderExecutionLog = OrderExecutionLogs(generateOrderExecutionId(),orderExecutionPrice,sellQuantity)
                                 currentSellOrder.addOrderExecutionLogs(orderExecutionLog)
                                 //remove SellOrder From Priority Queue
