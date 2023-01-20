@@ -8,23 +8,30 @@ class User(val userName: String,
     val account: Account = Account()
     val orders: ArrayList<Order> = ArrayList<Order>()
 
-    fun addOrder(orderQuantity: Long, orderType: String, orderAmount: Long) : String{
+    fun addOrder(orderQuantity: Long, orderType: String, orderAmount: Long,typeOfESOP: String="NON-PERFORMANCE") : String{
         var response = ""
         if ( orderType == "BUY" ){
             val amountRequiredToBuy = orderQuantity*orderAmount
             response = account.wallet.moveFreeMoneyToLockedMoney(amountRequiredToBuy)
         }else if ( orderType == "SELL" ){
-            response = account.inventory.moveFreeInventoryToLockedInventory(orderQuantity)
+            if(typeOfESOP == "NON-PERFORMANCE")
+                response = account.inventory.moveFreeInventoryToLockedInventory(orderQuantity)
+            else
+                response = account.inventory.moveFreePerformanceInventoryToLockedPerformanceInventory(orderQuantity)
         }
         if (response == "Success"){
             val orderObj = Order(this.userName,Util.generateOrderId(),orderQuantity,orderAmount,orderType)
             orders.add(orderObj)
             if( orderType == "BUY" ){
                 Util.addOrderToBuyList(orderObj)
-            }else if ( orderType == "SELL" ){
-                Util.addOrderToSellList(orderObj)
+            }else if ( orderType == "SELL"){
+                if(typeOfESOP == "NON-PERFORMANCE")
+                    Util.addOrderToSellList(orderObj)
+                else{
+                    Util.addOrderToPerformanceSellList(orderObj)
+                }
             }
-            Util.processOrder()
+            Util.matchOrders()
             return "Order Placed Successfully."
         }else{
             return response
