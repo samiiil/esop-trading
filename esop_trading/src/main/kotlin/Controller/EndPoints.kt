@@ -10,7 +10,7 @@ import io.micronaut.json.tree.JsonObject
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
-
+import TOTAL_FEE_COLLECTED
 @Controller("/")
 class EndPoints {
 
@@ -163,4 +163,11 @@ class EndPoints {
         response = Data.userList.get(user_name)!!.getOrderDetails();
         return HttpResponse.status<Any>(HttpStatus.OK).body(response);
     }
+    @Get("/fees")
+    fun getFees (): HttpResponse<*>{
+
+        return HttpResponse.status<Any>(HttpStatus.OK).body(mapOf(Pair("TotalFees",TOTAL_FEE_COLLECTED)))
+
+
+        }
 }
