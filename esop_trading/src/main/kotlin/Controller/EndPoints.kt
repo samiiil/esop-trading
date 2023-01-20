@@ -49,16 +49,17 @@ class EndPoints {
 
         if(firstName.isEmpty())
             println("first name is null")
-        println(username)
+        if(lastName.isEmpty())
+            println("Last name is null")
+       // println(username)
 
         var errorMessages: ArrayList<String> = ArrayList<String>();
 
-        for(error in Util.validateNames(firstName, "firstName")) errorList.add(error)
-        for(error in Util.validateNames(firstName, "lastName")) errorList.add(error)
-        for(error in Util.validateNames(firstName, "username")) errorList.add(error)
-
-        for(error in Util.validateEmailIds(email)) errorList.add(error)
+        for(error in Util.validateFirstName(firstName)) errorList.add(error)
+        for(error in Util.validateLastName(lastName)) errorList.add(error)
         for(error in Util.validatePhoneNumber(phoneNumber, errorList)) errorList.add(error)
+        for(error in Util.validateEmailIds(email)) errorList.add(error)
+        for(error in Util.validateUserName(username)) errorList.add(error)
 
         if (errorList.isEmpty()) {
             Util.createUser(username, firstName, lastName, phoneNumber, email);

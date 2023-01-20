@@ -50,13 +50,42 @@ class Util {
             }
             return errorList
         }
-        fun validateNames(name: String, type: String): ArrayList<String>{
+        fun validateFirstName(name: String): ArrayList<String>{
             val errorList = arrayListOf<String>()
 
-            if(!name.matches(Regex("[A-Za-z]+"))){
-                errorList.add("$type should only contain characters")
+            if(name.length<3){
+                errorList.add("First name has to be at least three characters.")
+            }
+            if(!name.matches(Regex("([A-Za-z]+ ?)+"))){
+                errorList.add("Invalid FirstName.")
             }
             return errorList
+        }
+        fun validateLastName(name: String): ArrayList<String>{
+            val errorList = arrayListOf<String>()
+            if(name.length<1){
+                errorList.add("Last name has to be at least one characters.")
+            }
+            if(!name.matches(Regex("([A-Za-z]+ ?)+"))){
+                errorList.add("Invalid LastName.")
+            }
+            for(i in errorList)
+            println(i)
+            return errorList
+        }
+        fun validateUserName(username: String): ArrayList<String>{
+            val errorList = arrayListOf<String>()
+            if(Data.userList.contains(username)){
+                errorList.add("Username already taken")
+            }
+            if(username.length<3){
+                errorList.add("Username has to be at least three characters.")
+            }
+            if(!username.matches(Regex("_*[A-Za-z][\\w_]*"))){
+                errorList.add("Username can only contain characters,numbers and underscores and must have at least one character.")
+            }
+            return errorList
+
         }
         fun validateUser(userName: String):Boolean{
             if(Data.userList.containsKey(userName)){
@@ -67,7 +96,7 @@ class Util {
 
         fun validateEmailIds(emailId: String): ArrayList<String>{
             val errorList = arrayListOf<String>()
-            //val pattern = Regex("(?:[a-z0-9!#\$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#\$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])\n")
+
             if(!emailId.matches(Regex("^[a-zA-Z0-9.!#\$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*\$"))){
                     errorList.add("Invalid email address")
             }
@@ -84,9 +113,31 @@ class Util {
             if(Data.registeredPhoneNumbers.contains(phoneNumber)){
                 errorList.add("Phone number already exists")
             }
-
-            if(phoneNumber.length != 10 || !phoneNumber.matches(Regex("[0-9]+"))){
+            if(phoneNumber.length<10){
                 errorList.add("Invalid phone number")
+            }
+            if(phoneNumber.length==13 ){
+                if(!phoneNumber.substring(0,3).matches(Regex("\\+?\\d\\d"))  && phoneNumber.substring(3).matches(Regex("\\d*")))
+                   errorList.add("Invalid phone number")
+            }
+            else if(phoneNumber.length==12){
+                if(phoneNumber[0]=='+'){
+                    if(!phoneNumber.substring(1).matches(Regex("\\d*"))){
+                        errorList.add("Invalid Phone Number")
+                        println("right here")
+                    }
+                }
+                else{
+                    if(!phoneNumber.matches(Regex("\\d*"))){
+                        errorList.add("Invalid Phone Number")
+                        println("left here")
+                    }
+                }
+            }
+            else if(phoneNumber.length==11 || phoneNumber.length==10){
+                      if(!phoneNumber.matches(Regex("\\d*"))){
+                          errorList.add("Invalid Phone Number")
+                      }
             }
             return errorList
         }
