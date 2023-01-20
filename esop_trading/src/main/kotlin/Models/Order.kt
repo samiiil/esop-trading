@@ -21,4 +21,8 @@ class Order (val userName: String,
     fun getRemainingOrderQuantity(): Long{
         return this.remainingOrderQuantity;
     }
+
+    override fun toString(): String{
+        return "username:$userName\norderId:$orderId\norderQuantity:$orderQuantity\norderPrice:$orderPrice\norderType:$orderType\norderStatus:$orderStatus\nremainingQuantity:${getRemainingOrderQuantity()}\n\n"
+    }
 }
