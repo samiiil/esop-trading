@@ -4,6 +4,9 @@ import Models.User
 import Models.Order
 import Models.OrderExecutionLogs
 import kotlin.math.min
+import kotlin.math.roundToLong
+import COMMISSION_FEE_PERCENTAGE
+import TOTAL_FEE_COLLECTED
 
 class Util {
     companion object{
@@ -63,7 +66,6 @@ class Util {
                 val buyOrders = Data.buyList.iterator()
                 while(buyOrders.hasNext()){
                     val currentBuyOrder = buyOrders.next()
-
                     val performanceSellOrders = Data.performanceSellList.iterator()
                     while(performanceSellOrders.hasNext() && currentBuyOrder.getRemainingOrderQuantity() > 0){
                         val currentPerformanceSellOrder = performanceSellOrders.next()
@@ -92,7 +94,8 @@ class Util {
                 val orderQuantity = min(sellQuantity,buyQuantity)
                 val orderAmount = orderQuantity * orderExecutionPrice
                 sellerAccount.inventory.updateLockedInventory(orderQuantity, isPerformanceESOP)
-                sellerAccount.wallet.addMoneyToWallet(orderAmount)
+                sellerAccount.wallet.addMoneyToWallet((orderAmount*(1-COMMISSION_FEE_PERCENTAGE)).roundToLong())
+                TOTAL_FEE_COLLECTED += (orderAmount*COMMISSION_FEE_PERCENTAGE*0.01).roundToLong()
                 val orderExecutionLog = OrderExecutionLogs(generateOrderExecutionId(), orderExecutionPrice, orderQuantity)
                 sellOrder.addOrderExecutionLogs(orderExecutionLog)
                 buyerAccount.wallet.updateLockedMoney(orderAmount)
