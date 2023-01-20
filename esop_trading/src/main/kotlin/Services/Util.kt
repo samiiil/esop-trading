@@ -8,6 +8,7 @@ import io.micronaut.json.tree.JsonObject
 import org.jetbrains.annotations.NotNull
 import java.lang.Exception
 
+
 class Util {
     companion object{
         const val MAX_AMOUNT = 1000000000
@@ -88,22 +89,49 @@ class Util {
 
         }
         fun validateUser(userName: String):Boolean{
-            if(Data.userList.containsKey(userName)){
+            if(Data.userList.containsKey(userName)) {
                 return true;
             }
-            return false;
+               return  false;
         }
 
         fun validateEmailIds(emailId: String): ArrayList<String>{
             val errorList = arrayListOf<String>()
-
-            if(!emailId.matches(Regex("^[a-zA-Z0-9.!#\$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*\$"))){
-                    errorList.add("Invalid email address")
+            if(Data.registeredEmails.contains(emailId)){
+                errorList.add("Email already exists")
             }
 
-            if(Data.registeredEmails.contains(emailId)){
-                errorList.add("Email already exist")
 
+//            val EMAIL_ADDRESS_PATTERN = Pattern.compile(
+//                "[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}" +
+//                        "\\@" +
+//                        "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
+//                        "(" +
+//                        "\\." +
+//                        "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
+//                        ")+"
+//            )
+//            if(!EMAIL_ADDRESS_PATTERN.matcher(emailId).matches()){
+//                errorList.add("Invalid email address")
+//            }
+
+            if(!emailId.matches(Regex("^[a-zA-Z0-9.!#\$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*\$"))){
+                errorList.add("Invalid email address")
+            }
+            var index=0
+            if(emailId[index]=='.'){
+                errorList.add("Invalid Email address")
+            }
+            else {
+                while (index < emailId.length) {
+                    if (emailId[index] == '.') {
+                        if (emailId[index] == emailId[index + 1]) {
+                            errorList.add("Invalid Email address")
+                            break
+                        }
+                    }
+                    index++;
+                }
             }
             return errorList
         }
