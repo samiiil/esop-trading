@@ -3,6 +3,10 @@ package Controller
 import Models.Data
 import Models.RegisterInput
 import Services.Util
+import com.fasterxml.jackson.core.JsonParseException
+import io.micronaut.core.convert.ConversionError
+import io.micronaut.core.convert.exceptions.ConversionErrorException
+import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
 
 import io.micronaut.http.annotation.Body
@@ -15,8 +19,11 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.validation.Validated
 import java.lang.Exception
 import io.micronaut.http.annotation.Error
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.hateoas.JsonError
+import io.micronaut.http.hateoas.Link
 import javax.validation.Valid
+import kotlin.reflect.typeOf
 
 @Controller("/")
 class EndPoints {
@@ -193,9 +200,23 @@ class EndPoints {
     }
 
     @Error
-    fun handleError(): HttpResponse<JsonError>{
-        val error : JsonError = JsonError("Invalid JSON Input, properties missing")
-        return HttpResponse.serverError(error)
+    fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
+        //handles errors in json syntax
+        val errorMap = mutableMapOf<String, ArrayList<String>>()
+        val error = JsonError("Invalid JSON: ${e.message}")
+        errorMap["error"] = arrayListOf<String>("Invalid JSON: ${e.message}")
+        return HttpResponse.badRequest(errorMap)
+    }
+
+    //for handling missing fields in json input
+    @Error
+    fun handleBadRequest(request: HttpRequest<*>, e: Any): MutableHttpResponse<ConversionErrorException>? {
+        val errorList = arrayOf(e)
+        println(errorList.size)
+        for(error in errorList)
+            println(error)
+//        e.message?.let { errorList.add(it) }
+        return HttpResponse.status<ConversionErrorException>(HttpStatus.BAD_REQUEST, "add missing properties")
     }
 
 
