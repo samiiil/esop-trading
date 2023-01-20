@@ -75,8 +75,7 @@ class EndPoints {
 
         //Input Parsing
         val quantityToBeAdded = body.get("quantity")?.bigIntegerValue?.toLong()?: 0
-        val typeOfESOP = body.get("type")?.stringValue?.uppercase()?: ""
-
+        val typeOfESOP = body.get("esop_type")?.stringValue?.uppercase()?: "NON-PERFORMANCE"
         var errorMessages: ArrayList<String> = ArrayList<String>();
 
         val response: Map<String, *>;
@@ -117,12 +116,12 @@ class EndPoints {
             ),
             "Inventory" to arrayListOf<Any>(
                 mapOf(
-                    "type" to "PERFORMANCE",
+                    "esop_type" to "PERFORMANCE",
                     "free" to Data.userList.get(user_name)!!.account.inventory.getFreePerformanceInventory(),
                     "locked" to Data.userList.get(user_name)!!.account.inventory.getLockedPerformanceInventory()
                 ),
                mapOf(
-                   "type" to "NON-PERFORMANCE",
+                   "esop_type" to "NON-PERFORMANCE",
                    "free" to Data.userList.get(user_name)!!.account.inventory.getFreeInventory(),
                    "locked" to Data.userList.get(user_name)!!.account.inventory.getLockedInventory())
             ));
@@ -131,7 +130,6 @@ class EndPoints {
 
     @Post("/user/{user_name}/createOrder")
     fun createOrder(user_name: String, @Body body:JsonObject) : HttpResponse<*>{
-
         var errorMessages : ArrayList<String> = ArrayList<String> ();
 
         val response: Map<String,*>;
