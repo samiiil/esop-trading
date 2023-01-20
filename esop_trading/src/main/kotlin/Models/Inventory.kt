@@ -34,13 +34,11 @@ class Inventory {
     }
 
 
-
-    fun updateLockedInventory( inventoryToBeUpdated: Long){
-        this.lockedInventory = this.lockedInventory - inventoryToBeUpdated
-    }
-    fun updateLockedPerformanceInventory(inventoryToBeUpdated: Long)
-    {
-        this.lockedPerformanceInventory=this.lockedPerformanceInventory-inventoryToBeUpdated
+    fun updateLockedInventory(inventoryToBeUpdated: Long, isPerformanceESOP:Boolean){
+        if(isPerformanceESOP)
+            this.lockedPerformanceInventory=this.lockedPerformanceInventory-inventoryToBeUpdated
+        else
+            this.lockedInventory = this.lockedInventory - inventoryToBeUpdated
     }
     fun moveFreeInventoryToLockedInventory(esopsToBeLocked:Long): String {
 
