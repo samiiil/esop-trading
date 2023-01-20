@@ -12,39 +12,39 @@ class Util {
     companion object{
         fun validateUser(userName: String):Boolean{
             if(Data.userList.containsKey(userName)){
-                return true;
+                return true
             }
-            return false;
+            return false
         }
 
         fun validateEmailIds(emailId: String):Boolean{
             if(Data.registeredEmails.contains(emailId)){
-                return true;
+                return true
             }
-            return false;
+            return false
         }
 
         fun validatePhoneNumber(phoneNumber: String):Boolean{
             if(Data.registeredPhoneNumbers.contains(phoneNumber)){
-                return true;
+                return true
             }
-            return false;
+            return false
         }
 
         fun createUser(userName: String, firstName: String, lastName: String, phoneNumber: String, emailId: String){
-            Data.userList.put(userName,User(userName,firstName,lastName,phoneNumber,emailId));
-            Data.registeredPhoneNumbers.add(phoneNumber);
-            Data.registeredEmails.add(emailId);
+            Data.userList.put(userName,User(userName,firstName,lastName,phoneNumber,emailId))
+            Data.registeredPhoneNumbers.add(phoneNumber)
+            Data.registeredEmails.add(emailId)
         }
 
         @Synchronized
         fun generateOrderId():Long{
-            return Data.orderId++;
+            return Data.orderId++
         }
 
         @Synchronized
         fun generateOrderExecutionId():Long {
-            return Data.orderExecutionId++;
+            return Data.orderExecutionId++
         }
 
         @Synchronized
@@ -73,7 +73,7 @@ class Util {
                         if(deleteCurrentSellOrder) performanceSellOrders.remove()
                     }
 
-                    if(Data.buyList.isEmpty() || Data.sellList.isEmpty() || (Data.sellList.isNotEmpty() && Data.sellList.peek().orderPrice > currentBuyOrder.orderPrice)) break;
+                    if(Data.buyList.isEmpty() || Data.sellList.isEmpty() || (Data.sellList.isNotEmpty() && Data.sellList.peek().orderPrice > currentBuyOrder.orderPrice)) break
                     val sellOrders = Data.sellList.iterator()
                     while(sellOrders.hasNext() && currentBuyOrder.getRemainingOrderQuantity() > 0){
                         val currentSellOrder = sellOrders.next()

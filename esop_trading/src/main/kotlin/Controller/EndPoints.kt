@@ -7,80 +7,79 @@ import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Post
 import io.micronaut.json.tree.JsonObject
-import io.micronaut.http.HttpResponse;
+import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 
 @Controller("/")
 class EndPoints {
-
     @Post("/user/register")
     fun register(@Body body: JsonObject): HttpResponse<*> {
 
         //Input Parsing
-        var firstName = body.get("firstName").stringValue.trim()
-        var lastName = body.get("lastName").stringValue.trim()
-        var phoneNumber = body.get("phoneNumber").stringValue.trim()
-        var email = body.get("email").stringValue.trim()
-        var username = body.get("username").stringValue.trim()
+        val firstName = body.get("firstName").stringValue.trim()
+        val lastName = body.get("lastName").stringValue.trim()
+        val phoneNumber = body.get("phoneNumber").stringValue.trim()
+        val email = body.get("email").stringValue.trim()
+        val username = body.get("username").stringValue.trim()
 
 
-        var errorMessages: ArrayList<String> = ArrayList<String>();
+        val errorMessages: ArrayList<String> = ArrayList()
 
         if (Util.validateUser(username)) {
-            errorMessages.add("Username already exists.");
+            errorMessages.add("username already exists.")
         }
         if (Util.validateEmailIds(email)) {
-            errorMessages.add("Email Id already exists.");
+            errorMessages.add("Email Id already exists.")
         }
         if (Util.validatePhoneNumber(phoneNumber)) {
             errorMessages.add("Phone Number already exists.")
         }
         if (errorMessages.size == 0) {
-            Util.createUser(username, firstName, lastName, phoneNumber, email);
+            Util.createUser(username, firstName, lastName, phoneNumber, email)
         }
 
-        val response: Map<String, *>;
+        val response: Map<String, *>
         if (errorMessages.size > 0) {
-            response = mapOf("error" to errorMessages);
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+            response = mapOf("error" to errorMessages)
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         } else {
-            response = mapOf("message" to "User created successfully!!");
-            return HttpResponse.status<Any>(HttpStatus.OK).body(response);
+            response = mapOf("message" to "User created successfully!!")
+            return HttpResponse.status<Any>(HttpStatus.OK).body(response)
         }
     }
 
-    @Post("/user/{user_name}/addToWallet")
-    fun addToWallet(user_name: String, @Body body: JsonObject): HttpResponse<*> {
+    @Post("/user/{username}/addToWallet")
+    fun addToWallet(username: String, @Body body: JsonObject): HttpResponse<*> {
 
         //Input Parsing
         val amountToBeAdded = body.get("amount").bigIntegerValue.toLong()
 
-        var errorMessages: ArrayList<String> = ArrayList<String>();
+        val errorMessages: ArrayList<String> = ArrayList()
 
-        val response: Map<String, *>;
-        if (Util.validateUser(user_name) == false) {
-            errorMessages.add("Username does not exists.");
-            response = mapOf("error" to errorMessages);
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+        val response: Map<String, *>
+        if (!Util.validateUser(username)) {
+            errorMessages.add("username does not exists.")
+            response = mapOf("error" to errorMessages)
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
-        Data.userList.get(user_name)!!.account.wallet.addMoneyToWallet(amountToBeAdded);
-        response = mapOf("message" to "$amountToBeAdded amount added to account");
-        return HttpResponse.status<Any>(HttpStatus.OK).body(response);
+        Data.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
+        response = mapOf("message" to "$amountToBeAdded amount added to account")
+        return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 
-    @Post("/user/{user_name}/addToInventory")
-    fun addToInventory(user_name: String, @Body body: JsonObject): HttpResponse<*> {
+    @Post("/user/{username}/addToInventory")
+    fun addToInventory(username: String, @Body body: JsonObject): HttpResponse<*> {
 
         //Input Parsing
         val quantityToBeAdded = body.get("quantity")?.bigIntegerValue?.toLong()?: 0
         val typeOfESOP = body.get("esop_type")?.stringValue?.uppercase()?: "NON-PERFORMANCE"
-        var errorMessages: ArrayList<String> = ArrayList<String>();
+        val errorMessages: ArrayList<String> = ArrayList()
 
-        val response: Map<String, *>;
-        if (!Util.validateUser(user_name))
-            errorMessages.add("Username does not exists.");
+        val response: Map<String, *>
+        if (!Util.validateUser(username))
+            errorMessages.add("username does not exists.")
         if(quantityToBeAdded <= 0 || quantityToBeAdded > 1000)
             errorMessages.add("Invalid quantity of ESOPs")
         if(typeOfESOP !in arrayOf("PERFORMANCE","NON-PERFORMANCE"))
@@ -89,90 +88,89 @@ class EndPoints {
             response = mapOf("error" to errorMessages)
             return HttpResponse.badRequest(response)
         }
-        Data.userList[user_name]!!.account.inventory.addEsopToInventory(quantityToBeAdded, typeOfESOP)
+        Data.userList[username]!!.account.inventory.addEsopToInventory(quantityToBeAdded, typeOfESOP)
 
-        response = mapOf("message" to "$quantityToBeAdded $typeOfESOP ESOPs added to account");
-        return HttpResponse.status<Any>(HttpStatus.OK).body(response);
+        response = mapOf("message" to "$quantityToBeAdded $typeOfESOP ESOPs added to account")
+        return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
-    @Get("/user/{user_name}/accountInformation")
-    fun accountInformation(user_name: String) : HttpResponse<*> {
+    @Get("/user/{username}/accountInformation")
+    fun accountInformation(username: String) : HttpResponse<*> {
 
-        var errorMessages : ArrayList<String> = ArrayList<String> ();
+        val errorMessages : ArrayList<String> = ArrayList()
 
-        val response: Map<String,*>;
-        if(Util.validateUser(user_name) == false){
-            errorMessages.add("Username does not exists.");
-            response= mapOf("error" to errorMessages);
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+        val response: Map<String,*>
+        if(!Util.validateUser(username)){
+            errorMessages.add("username does not exists.")
+            response= mapOf("error" to errorMessages)
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
-        response = mapOf("FirstName" to Data.userList.get(user_name)!!.firstName,
-            "LastName" to Data.userList.get(user_name)!!.lastName,
-            "Phone" to Data.userList.get(user_name)!!.phoneNumber,
-            "Email" to Data.userList.get(user_name)!!.emailId,
-            "Wallet" to mapOf<String,Long>(
-                "free" to Data.userList.get(user_name)!!.account.wallet.getFreeMoney(),
-                "locked" to Data.userList.get(user_name)!!.account.wallet.getLockedMoney()
+        response = mapOf("FirstName" to Data.userList[username]!!.firstName,
+            "LastName" to Data.userList[username]!!.lastName,
+            "Phone" to Data.userList[username]!!.phoneNumber,
+            "Email" to Data.userList[username]!!.emailId,
+            "Wallet" to mapOf(
+                "free" to Data.userList[username]!!.account.wallet.getFreeMoney(),
+                "locked" to Data.userList[username]!!.account.wallet.getLockedMoney()
             ),
             "Inventory" to arrayListOf<Any>(
                 mapOf(
                     "esop_type" to "PERFORMANCE",
-                    "free" to Data.userList.get(user_name)!!.account.inventory.getFreePerformanceInventory(),
-                    "locked" to Data.userList.get(user_name)!!.account.inventory.getLockedPerformanceInventory()
+                    "free" to Data.userList[username]!!.account.inventory.getFreePerformanceInventory(),
+                    "locked" to Data.userList[username]!!.account.inventory.getLockedPerformanceInventory()
                 ),
                mapOf(
                    "esop_type" to "NON-PERFORMANCE",
-                   "free" to Data.userList.get(user_name)!!.account.inventory.getFreeInventory(),
-                   "locked" to Data.userList.get(user_name)!!.account.inventory.getLockedInventory())
-            ));
-        return HttpResponse.status<Any>(HttpStatus.OK).body(response);
+                   "free" to Data.userList[username]!!.account.inventory.getFreeInventory(),
+                   "locked" to Data.userList[username]!!.account.inventory.getLockedInventory())
+            ))
+        return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 
-    @Post("/user/{user_name}/createOrder")
-    fun createOrder(user_name: String, @Body body:JsonObject) : HttpResponse<*>{
-        var errorMessages : ArrayList<String> = ArrayList<String> ();
+    @Post("/user/{username}/createOrder")
+    fun createOrder(username: String, @Body body:JsonObject) : HttpResponse<*>{
+        val errorMessages : ArrayList<String> = ArrayList()
 
-        val response: Map<String,*>;
+        val response: Map<String,*>
 
-        if(Util.validateUser(user_name) == false){
-            errorMessages.add("Username does not exists.");
-            response= mapOf("error" to errorMessages);
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+        if(!Util.validateUser(username)){
+            errorMessages.add("username does not exists.")
+            response= mapOf("error" to errorMessages)
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
         //Input Parsing
-        val orderQuantity: Long = body.get("quantity").bigIntegerValue.toLong();
-        val orderType: String = body.get("order_type").stringValue.trim();
-        val orderAmount: Long = body.get("price").bigIntegerValue.toLong();
+        val orderQuantity: Long = body.get("quantity").bigIntegerValue.toLong()
+        val orderType: String = body.get("order_type").stringValue.trim()
+        val orderAmount: Long = body.get("price").bigIntegerValue.toLong()
         val typeOfESOP: String = body.get("esop_type")?.stringValue?:"NON-PERFORMANCE".trim().uppercase()
         //Create Order
-        val result = Data.userList[user_name]!!.addOrder(orderQuantity,orderType,orderAmount,typeOfESOP);
+        val result = Data.userList[username]!!.addOrder(orderQuantity,orderType,orderAmount,typeOfESOP)
 
         if (result != "Order Placed Successfully."){
-            errorMessages.add(result);
-            response= mapOf("error" to errorMessages);
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+            errorMessages.add(result)
+            response= mapOf("error" to errorMessages)
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
-        response = mapOf("message" to result);
+        response = mapOf("message" to result)
 
-        return HttpResponse.status<Any>(HttpStatus.OK).body(response);
+        return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 
-    @Get("/user/{user_name}/orderHistory")
-    fun orderHistory(user_name: String) : HttpResponse<*>{
+    @Get("/user/{username}/orderHistory")
+    fun orderHistory(username: String) : HttpResponse<*>{
+        val errorMessages : ArrayList<String> = ArrayList()
 
-        var errorMessages : ArrayList<String> = ArrayList<String> ();
+        val response: Map<String,*>
 
-        val response: Map<String,*>;
-
-        if(Util.validateUser(user_name) == false){
-            errorMessages.add("Username does not exists.");
-            response= mapOf("error" to errorMessages);
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response);
+        if(!Util.validateUser(username)){
+            errorMessages.add("username does not exists.")
+            response= mapOf("error" to errorMessages)
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
-        response = Data.userList.get(user_name)!!.getOrderDetails();
-        return HttpResponse.status<Any>(HttpStatus.OK).body(response);
+        response = Data.userList[username]!!.getOrderDetails()
+        return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 }
