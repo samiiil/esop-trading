@@ -1,4 +1,5 @@
 package Services
+
 import Models.Data
 import Models.User
 import Models.Order
@@ -6,98 +7,107 @@ import Models.OrderExecutionLogs
 import kotlin.math.roundToLong
 import COMMISSION_FEE_PERCENTAGE
 import TOTAL_FEE_COLLECTED
+
 class Util {
-    companion object{
-        fun validateUser(userName: String):Boolean{
-            if(Data.userList.containsKey(userName)){
-                return true;
+    companion object {
+        fun validateUser(userName: String): Boolean {
+            if (Data.userList.containsKey(userName)) {
+                return true
             }
-            return false;
+            return false
         }
 
-        fun validateEmailIds(emailId: String):Boolean{
-            if(Data.registeredEmails.contains(emailId)){
-                return true;
+        fun validateEmailIds(emailId: String): Boolean {
+            if (Data.registeredEmails.contains(emailId)) {
+                return true
             }
-            return false;
+            return false
         }
 
-        fun validatePhoneNumber(phoneNumber: String):Boolean{
-            if(Data.registeredPhoneNumbers.contains(phoneNumber)){
-                return true;
+        fun validatePhoneNumber(phoneNumber: String): Boolean {
+            if (Data.registeredPhoneNumbers.contains(phoneNumber)) {
+                return true
             }
-            return false;
+            return false
         }
 
-        fun createUser(userName: String, firstName: String, lastName: String, phoneNumber: String, emailId: String){
-            Data.userList.put(userName,User(userName,firstName,lastName,phoneNumber,emailId));
-            Data.registeredPhoneNumbers.add(phoneNumber);
-            Data.registeredEmails.add(emailId);
+        fun createUser(userName: String, firstName: String, lastName: String, phoneNumber: String, emailId: String) {
+            Data.userList[userName] = User(userName, firstName, lastName, phoneNumber, emailId)
+            Data.registeredPhoneNumbers.add(phoneNumber)
+            Data.registeredEmails.add(emailId)
         }
 
         @Synchronized
-        fun generateOrderId():Long{
-            return Data.orderId++;
+        fun generateOrderId(): Long {
+            return Data.orderId++
         }
 
         @Synchronized
-        fun generateOrderExecutionId():Long {
-            return Data.orderExecutionId++;
+        fun generateOrderExecutionId(): Long {
+            return Data.orderExecutionId++
         }
 
         @Synchronized
-        fun addOrderToBuyList(order:Order){
+        fun addOrderToBuyList(order: Order) {
             Data.buyList.add(order)
         }
+
         @Synchronized
-        fun addOrderToSellList(order:Order){
+        fun addOrderToSellList(order: Order) {
             Data.sellList.add(order)
         }
 
-        fun processOrder(){
-            if(!Data.sellList.isEmpty() && !Data.buyList.isEmpty()){
+        fun processOrder() {
+            if (!Data.sellList.isEmpty() && !Data.buyList.isEmpty()) {
                 val sellOrders = Data.sellList.iterator()
-                while(sellOrders.hasNext()){
+
+                while (sellOrders.hasNext()) {
                     val currentSellOrder = sellOrders.next()
-                    if ((!Data.buyList.isEmpty() && currentSellOrder.orderPrice > Data.buyList.peek().orderPrice) || Data.buyList.isEmpty()){
-                        break;
+                    if ((!Data.buyList.isEmpty() && currentSellOrder.orderPrice > Data.buyList.peek().orderPrice) || Data.buyList.isEmpty()) {
+                        break
                     }
+
                     val buyOrders = Data.buyList.iterator()
-                    while(buyOrders.hasNext()){
+                    while (buyOrders.hasNext()) {
                         val currentBuyOrder = buyOrders.next()
-                        if(currentSellOrder.orderPrice <= currentBuyOrder.orderPrice){
+
+                        if (currentSellOrder.orderPrice <= currentBuyOrder.orderPrice) {
                             val sellQuantity = currentSellOrder.getRemainingOrderQuantity()
                             val buyQuantity = currentBuyOrder.getRemainingOrderQuantity()
-                            val sellerAccount = Data.userList.get(currentSellOrder.userName)!!.account
-                            val buyerAccount = Data.userList.get(currentBuyOrder.userName)!!.account
-                            if( sellQuantity < buyQuantity ){
+                            val sellerAccount = Data.userList[currentSellOrder.userName]!!.account
+                            val buyerAccount = Data.userList[currentBuyOrder.userName]!!.account
+
+                            if (sellQuantity < buyQuantity) {
                                 val orderExecutionPrice = currentSellOrder.orderPrice
                                 sellerAccount.inventory.updateLockedInventory(sellQuantity)
-                                sellerAccount.wallet.addMoneyToWallet((orderExecutionPrice*sellQuantity*(1-COMMISSION_FEE_PERCENTAGE*0.01)).roundToLong())
-                                TOTAL_FEE_COLLECTED += (orderExecutionPrice*sellQuantity*COMMISSION_FEE_PERCENTAGE*0.01).roundToLong()
-                                val orderExecutionLog = OrderExecutionLogs(generateOrderExecutionId(),orderExecutionPrice,sellQuantity)
+                                sellerAccount.wallet.addMoneyToWallet((orderExecutionPrice * sellQuantity * (1 - COMMISSION_FEE_PERCENTAGE * 0.01)).roundToLong())
+                                TOTAL_FEE_COLLECTED += (orderExecutionPrice * sellQuantity * COMMISSION_FEE_PERCENTAGE * 0.01).roundToLong()
+                                val orderExecutionLog =
+                                    OrderExecutionLogs(generateOrderExecutionId(), orderExecutionPrice, sellQuantity)
                                 currentSellOrder.addOrderExecutionLogs(orderExecutionLog)
                                 //remove SellOrder From Priority Queue
-                                sellOrders.remove();
+                                sellOrders.remove()
 
-                                buyerAccount.wallet.updateLockedMoney((orderExecutionPrice*sellQuantity))
+                                buyerAccount.wallet.updateLockedMoney((orderExecutionPrice * sellQuantity))
                                 buyerAccount.inventory.addEsopToInventory(sellQuantity)
                                 currentBuyOrder.addOrderExecutionLogs(orderExecutionLog)
-                                if(currentBuyOrder.orderPrice > orderExecutionPrice){
-                                    val amountToBeMovedFromLockedWalletToFreeWallet = ((currentBuyOrder.orderQuantity*currentBuyOrder.orderPrice) - (orderExecutionPrice*sellQuantity) - (currentBuyOrder.orderPrice * currentBuyOrder.getRemainingOrderQuantity()))
+                                if (currentBuyOrder.orderPrice > orderExecutionPrice) {
+                                    val amountToBeMovedFromLockedWalletToFreeWallet =
+                                        ((currentBuyOrder.orderQuantity * currentBuyOrder.orderPrice) - (orderExecutionPrice * sellQuantity) - (currentBuyOrder.orderPrice * currentBuyOrder.getRemainingOrderQuantity()))
                                     buyerAccount.wallet.updateLockedMoney(amountToBeMovedFromLockedWalletToFreeWallet)
                                     buyerAccount.wallet.addMoneyToWallet(amountToBeMovedFromLockedWalletToFreeWallet)
                                 }
-                            }
-                            else if( sellQuantity > buyQuantity ){
+                            } else if (sellQuantity > buyQuantity) {
                                 val orderExecutionPrice = currentSellOrder.orderPrice
-                                buyerAccount.wallet.updateLockedMoney((orderExecutionPrice*buyQuantity))
+                                buyerAccount.wallet.updateLockedMoney((orderExecutionPrice * buyQuantity))
                                 buyerAccount.inventory.addEsopToInventory(buyQuantity)
-                                val orderExecutionLog = OrderExecutionLogs(generateOrderExecutionId(),orderExecutionPrice,buyQuantity)
+                                val orderExecutionLog =
+                                    OrderExecutionLogs(generateOrderExecutionId(), orderExecutionPrice, buyQuantity)
                                 currentBuyOrder.addOrderExecutionLogs(orderExecutionLog)
 
-                                if(currentBuyOrder.orderPrice > orderExecutionPrice){
-                                    val amountToBeMovedFromLockedWalletToFreeWallet = (currentBuyOrder.orderPrice - orderExecutionPrice) * buyQuantity
+                                if (currentBuyOrder.orderPrice > orderExecutionPrice) {
+                                    val amountToBeMovedFromLockedWalletToFreeWallet =
+                                        (currentBuyOrder.orderPrice - orderExecutionPrice) * buyQuantity
                                     buyerAccount.wallet.updateLockedMoney(amountToBeMovedFromLockedWalletToFreeWallet)
                                     buyerAccount.wallet.addMoneyToWallet(amountToBeMovedFromLockedWalletToFreeWallet)
                                 }
@@ -105,24 +115,25 @@ class Util {
                                 buyOrders.remove()
 
                                 sellerAccount.inventory.updateLockedInventory(buyQuantity)
-                                sellerAccount.wallet.addMoneyToWallet((orderExecutionPrice*buyQuantity*(1-COMMISSION_FEE_PERCENTAGE*0.01)).roundToLong())
-                                TOTAL_FEE_COLLECTED += (orderExecutionPrice*buyQuantity*COMMISSION_FEE_PERCENTAGE*0.01).roundToLong()
+                                sellerAccount.wallet.addMoneyToWallet((orderExecutionPrice * buyQuantity * (1 - COMMISSION_FEE_PERCENTAGE * 0.01)).roundToLong())
+                                TOTAL_FEE_COLLECTED += (orderExecutionPrice * buyQuantity * COMMISSION_FEE_PERCENTAGE * 0.01).roundToLong()
                                 currentSellOrder.addOrderExecutionLogs(orderExecutionLog)
-                            }
-                            else if( sellQuantity == buyQuantity ){
+                            } else {
                                 val orderExecutionPrice = currentSellOrder.orderPrice
                                 sellerAccount.inventory.updateLockedInventory(sellQuantity)
-                                sellerAccount.wallet.addMoneyToWallet((orderExecutionPrice*sellQuantity*(1-COMMISSION_FEE_PERCENTAGE*0.01)).roundToLong())
-                                TOTAL_FEE_COLLECTED += (orderExecutionPrice*sellQuantity*COMMISSION_FEE_PERCENTAGE*0.01).roundToLong()
-                                val orderExecutionLog = OrderExecutionLogs(generateOrderExecutionId(),orderExecutionPrice,sellQuantity)
+                                sellerAccount.wallet.addMoneyToWallet((orderExecutionPrice * sellQuantity * (1 - COMMISSION_FEE_PERCENTAGE * 0.01)).roundToLong())
+                                TOTAL_FEE_COLLECTED += (orderExecutionPrice * sellQuantity * COMMISSION_FEE_PERCENTAGE * 0.01).roundToLong()
+                                val orderExecutionLog =
+                                    OrderExecutionLogs(generateOrderExecutionId(), orderExecutionPrice, sellQuantity)
                                 currentSellOrder.addOrderExecutionLogs(orderExecutionLog)
                                 //remove SellOrder From Priority Queue
                                 sellOrders.remove()
 
                                 buyerAccount.inventory.addEsopToInventory(sellQuantity)
-                                buyerAccount.wallet.updateLockedMoney((sellQuantity*orderExecutionPrice))
-                                if(currentBuyOrder.orderPrice > orderExecutionPrice){
-                                    val amountToBeMovedFromLockedWalletToFreeWallet = (currentBuyOrder.orderPrice - orderExecutionPrice) * sellQuantity
+                                buyerAccount.wallet.updateLockedMoney((sellQuantity * orderExecutionPrice))
+                                if (currentBuyOrder.orderPrice > orderExecutionPrice) {
+                                    val amountToBeMovedFromLockedWalletToFreeWallet =
+                                        (currentBuyOrder.orderPrice - orderExecutionPrice) * sellQuantity
                                     buyerAccount.wallet.updateLockedMoney(amountToBeMovedFromLockedWalletToFreeWallet)
                                     buyerAccount.wallet.addMoneyToWallet(amountToBeMovedFromLockedWalletToFreeWallet)
                                 }
