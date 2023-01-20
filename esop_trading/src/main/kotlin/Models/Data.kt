@@ -1,6 +1,7 @@
 package Models
 import Services.BuyOrderingComparator
 import Services.SellOrderingComparator
+import java.util.LinkedList
 import java.util.PriorityQueue
 
 class Data {
@@ -14,5 +15,6 @@ class Data {
 
         val buyList = PriorityQueue<Order>(BuyOrderingComparator);
         val sellList = PriorityQueue<Order>(SellOrderingComparator);
+        val performanceSellList = LinkedList<Order>()
     }
 }
