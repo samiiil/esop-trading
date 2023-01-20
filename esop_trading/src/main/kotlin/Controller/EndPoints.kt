@@ -142,11 +142,11 @@ class EndPoints {
 
         //Input Parsing
         val orderQuantity: Long = body.get("quantity").bigIntegerValue.toLong();
-        val orderType: String = body.get("type").stringValue.trim();
+        val orderType: String = body.get("order_type").stringValue.trim();
         val orderAmount: Long = body.get("price").bigIntegerValue.toLong();
-
+        val typeOfESOP: String = body.get("esop_type")?.stringValue?:"NON-PERFORMANCE".trim().uppercase()
         //Create Order
-        val result = Data.userList.get(user_name)!!.addOrder(orderQuantity,orderType,orderAmount);
+        val result = Data.userList[user_name]!!.addOrder(orderQuantity,orderType,orderAmount,typeOfESOP);
 
         if (result != "Order Placed Successfully."){
             errorMessages.add(result);
@@ -155,6 +155,7 @@ class EndPoints {
         }
 
         response = mapOf("message" to result);
+
         return HttpResponse.status<Any>(HttpStatus.OK).body(response);
     }
 
