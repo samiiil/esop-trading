@@ -1,6 +1,6 @@
 package Controller
 
-import Models.Data
+import Models.DataStorage
 import Services.Util
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -63,7 +63,7 @@ class EndPoints {
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
-        Data.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
+        DataStorage.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
         response = mapOf("message" to "$amountToBeAdded amount added to account")
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
@@ -87,7 +87,7 @@ class EndPoints {
             response = mapOf("error" to errorMessages)
             return HttpResponse.badRequest(response)
         }
-        Data.userList[username]!!.account.inventory.addEsopToInventory(quantityToBeAdded, typeOfESOP)
+        DataStorage.userList[username]!!.account.inventory.addEsopToInventory(quantityToBeAdded, typeOfESOP)
 
         response = mapOf("message" to "$quantityToBeAdded $typeOfESOP ESOPs added to account")
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
@@ -106,24 +106,24 @@ class EndPoints {
         }
 
         response = mapOf(
-            "FirstName" to Data.userList[username]!!.firstName,
-            "LastName" to Data.userList[username]!!.lastName,
-            "Phone" to Data.userList[username]!!.phoneNumber,
-            "Email" to Data.userList[username]!!.emailId,
+            "FirstName" to DataStorage.userList[username]!!.firstName,
+            "LastName" to DataStorage.userList[username]!!.lastName,
+            "Phone" to DataStorage.userList[username]!!.phoneNumber,
+            "Email" to DataStorage.userList[username]!!.emailId,
             "Wallet" to mapOf(
-                "free" to Data.userList[username]!!.account.wallet.getFreeMoney(),
-                "locked" to Data.userList[username]!!.account.wallet.getLockedMoney()
+                "free" to DataStorage.userList[username]!!.account.wallet.getFreeMoney(),
+                "locked" to DataStorage.userList[username]!!.account.wallet.getLockedMoney()
             ),
             "Inventory" to arrayListOf<Any>(
                 mapOf(
                     "esop_type" to "PERFORMANCE",
-                    "free" to Data.userList[username]!!.account.inventory.getFreePerformanceInventory(),
-                    "locked" to Data.userList[username]!!.account.inventory.getLockedPerformanceInventory()
+                    "free" to DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory(),
+                    "locked" to DataStorage.userList[username]!!.account.inventory.getLockedPerformanceInventory()
                 ),
                 mapOf(
                     "esop_type" to "NON-PERFORMANCE",
-                    "free" to Data.userList[username]!!.account.inventory.getFreeInventory(),
-                    "locked" to Data.userList[username]!!.account.inventory.getLockedInventory()
+                    "free" to DataStorage.userList[username]!!.account.inventory.getFreeInventory(),
+                    "locked" to DataStorage.userList[username]!!.account.inventory.getLockedInventory()
                 )
             )
         )
@@ -148,7 +148,7 @@ class EndPoints {
         val orderAmount: Long = body.get("price").bigIntegerValue.toLong()
         val typeOfESOP: String = body.get("esop_type")?.stringValue ?: "NON-PERFORMANCE".trim().uppercase()
         //Create Order
-        val result = Data.userList[username]!!.addOrder(orderQuantity, orderType, orderAmount, typeOfESOP)
+        val result = DataStorage.userList[username]!!.addOrder(orderQuantity, orderType, orderAmount, typeOfESOP)
 
         if (result != "Order Placed Successfully.") {
             errorMessages.add(result)
@@ -173,7 +173,7 @@ class EndPoints {
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
-        response = Data.userList[username]!!.getOrderDetails()
+        response = DataStorage.userList[username]!!.getOrderDetails()
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 }
