@@ -67,23 +67,23 @@ class Util {
                 while(buyOrders.hasNext()){
                     val currentBuyOrder = buyOrders.next()
                     val performanceSellOrders = Data.performanceSellList.iterator()
-                    while(performanceSellOrders.hasNext() && currentBuyOrder.getRemainingOrderQuantity() > 0){
+                    while(performanceSellOrders.hasNext() && currentBuyOrder.remainingOrderQuantity > 0){
                         val currentPerformanceSellOrder = performanceSellOrders.next()
                         processOrder(currentBuyOrder, currentPerformanceSellOrder, true)
-                        if(currentPerformanceSellOrder.getRemainingOrderQuantity() <= currentBuyOrder.getRemainingOrderQuantity())
+                        if(currentPerformanceSellOrder.remainingOrderQuantity <= currentBuyOrder.remainingOrderQuantity)
                             performanceSellOrders.remove()
-                        if(currentBuyOrder.getRemainingOrderQuantity() <= currentPerformanceSellOrder.getRemainingOrderQuantity())
+                        if(currentBuyOrder.remainingOrderQuantity <= currentPerformanceSellOrder.remainingOrderQuantity)
                             Data.buyList.remove(currentBuyOrder)
                     }
 
                     if(Data.buyList.isEmpty() || Data.sellList.isEmpty() || (Data.sellList.isNotEmpty() && Data.sellList.peek().orderPrice > currentBuyOrder.orderPrice)) break
                     val sellOrders = Data.sellList.iterator()
-                    while(sellOrders.hasNext() && currentBuyOrder.getRemainingOrderQuantity() > 0){
+                    while(sellOrders.hasNext() && currentBuyOrder.remainingOrderQuantity > 0){
                         val currentSellOrder = sellOrders.next()
                         processOrder(currentBuyOrder, currentSellOrder,false)
-                        if(currentSellOrder.getRemainingOrderQuantity() <= currentBuyOrder.getRemainingOrderQuantity())
+                        if(currentSellOrder.remainingOrderQuantity <= currentBuyOrder.remainingOrderQuantity)
                             sellOrders.remove()
-                        if(currentBuyOrder.getRemainingOrderQuantity() <= currentSellOrder.getRemainingOrderQuantity())
+                        if(currentBuyOrder.remainingOrderQuantity <= currentSellOrder.remainingOrderQuantity)
                             Data.buyList.remove(currentBuyOrder)
                     }
                 }
@@ -92,8 +92,8 @@ class Util {
 
         private fun processOrder(buyOrder: Order, sellOrder: Order, isPerformanceESOP:Boolean){
             if(sellOrder.orderPrice <= buyOrder.orderPrice){
-                val sellQuantity = sellOrder.getRemainingOrderQuantity()
-                val buyQuantity = buyOrder.getRemainingOrderQuantity()
+                val sellQuantity = sellOrder.remainingOrderQuantity
+                val buyQuantity = buyOrder.remainingOrderQuantity
                 val sellerAccount = Data.userList.get(sellOrder.userName)!!.account
                 val buyerAccount = Data.userList.get(buyOrder.userName)!!.account
                 val orderExecutionPrice = sellOrder.orderPrice

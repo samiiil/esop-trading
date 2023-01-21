@@ -73,7 +73,7 @@ class User(val username: String,
                     val unfilledOrderExecutionLogs = ArrayList<Map<String,Any>>()
                     val currentOrderExecutionLogs = mutableMapOf<String,Any>()
                     currentOrderExecutionLogs["price"] = order.orderPrice
-                    currentOrderExecutionLogs["quantity"] = order.getRemainingOrderQuantity()
+                    currentOrderExecutionLogs["quantity"] = order.remainingOrderQuantity
                     unfilledOrderExecutionLogs.add(currentOrderExecutionLogs)
                     currentOrderDetails["unfilled"] = unfilledOrderExecutionLogs
                 }
