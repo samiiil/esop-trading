@@ -96,20 +96,16 @@ class Util {
                 sellerAccount.inventory.updateLockedInventory(orderQuantity, isPerformanceESOP)
                 sellerAccount.wallet.addMoneyToWallet((orderAmount*(1-COMMISSION_FEE_PERCENTAGE)).roundToLong())
                 TOTAL_FEE_COLLECTED += (orderAmount*COMMISSION_FEE_PERCENTAGE*0.01).roundToLong()
-                val orderExecutionLog = OrderExecutionLogs(generateOrderExecutionId(), orderExecutionPrice, orderQuantity)
-                sellOrder.addOrderExecutionLogs(orderExecutionLog)
                 buyerAccount.wallet.updateLockedMoney(orderAmount)
                 buyerAccount.inventory.addEsopToInventory(orderQuantity)
-                buyOrder.addOrderExecutionLogs(orderExecutionLog)
                 if(buyOrder.orderPrice > orderExecutionPrice){
                     val amountToBeMovedFromLockedWalletToFreeWallet = orderQuantity * (buyOrder.orderPrice - orderExecutionPrice)
                     buyerAccount.wallet.updateLockedMoney(amountToBeMovedFromLockedWalletToFreeWallet)
                     buyerAccount.wallet.addMoneyToWallet(amountToBeMovedFromLockedWalletToFreeWallet)
                 }
-                if(buyQuantity <= orderQuantity){
-                    Data.buyList.remove(buyOrder)
-                }
-                if(sellQuantity <= orderQuantity) return true
+                val orderExecutionLog = OrderExecutionLogs(generateOrderExecutionId(), orderExecutionPrice, orderQuantity)
+                sellOrder.addOrderExecutionLogs(orderExecutionLog)
+                buyOrder.addOrderExecutionLogs(orderExecutionLog)
             }
             return false
         }
