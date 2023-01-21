@@ -1,18 +1,16 @@
 package Models
-class Inventory {
-    private var freeInventory: Long=0L
-    private var lockedInventory: Long=0L
-    private var freePerformanceInventory: Long=0L
-    private var lockedPerformanceInventory: Long= 0L
 
-    fun addEsopToInventory(esopsToBeAdded:Long,type:String="NON-PERFORMANCE"){
-        if(type=="PERFORMANCE")
-        {
-            this.freePerformanceInventory=this.freePerformanceInventory+esopsToBeAdded
-        }
-        else
-        {
-            this.freeInventory =  this.freeInventory + esopsToBeAdded
+class Inventory {
+    private var freeInventory: Long = 0L
+    private var lockedInventory: Long = 0L
+    private var freePerformanceInventory: Long = 0L
+    private var lockedPerformanceInventory: Long = 0L
+
+    fun addEsopToInventory(esopsToBeAdded: Long, type: String = "NON-PERFORMANCE") {
+        if (type == "PERFORMANCE") {
+            this.freePerformanceInventory = this.freePerformanceInventory + esopsToBeAdded
+        } else {
+            this.freeInventory = this.freeInventory + esopsToBeAdded
         }
 
     }
@@ -24,22 +22,24 @@ class Inventory {
     fun getLockedInventory(): Long {
         return this.lockedInventory
     }
-    fun getFreePerformanceInventory(): Long{
+
+    fun getFreePerformanceInventory(): Long {
         return this.freePerformanceInventory
     }
 
-    fun getLockedPerformanceInventory(): Long{
+    fun getLockedPerformanceInventory(): Long {
         return this.lockedPerformanceInventory
     }
 
 
-    fun updateLockedInventory(inventoryToBeUpdated: Long, isPerformanceESOP:Boolean){
-        if(isPerformanceESOP)
-            this.lockedPerformanceInventory=this.lockedPerformanceInventory-inventoryToBeUpdated
+    fun updateLockedInventory(inventoryToBeUpdated: Long, isPerformanceESOP: Boolean) {
+        if (isPerformanceESOP)
+            this.lockedPerformanceInventory = this.lockedPerformanceInventory - inventoryToBeUpdated
         else
             this.lockedInventory = this.lockedInventory - inventoryToBeUpdated
     }
-    fun moveFreeInventoryToLockedInventory(esopsToBeLocked:Long): String {
+
+    fun moveFreeInventoryToLockedInventory(esopsToBeLocked: Long): String {
 
         if (this.freeInventory >= esopsToBeLocked) {
             this.freeInventory = this.freeInventory - esopsToBeLocked
@@ -50,16 +50,17 @@ class Inventory {
         }
 
     }
-        fun moveFreePerformanceInventoryToLockedPerformanceInventory(esopsToBeLocked: Long): String{
-            if (this.freePerformanceInventory >= esopsToBeLocked) {
-                this.freePerformanceInventory = this.freePerformanceInventory - esopsToBeLocked
-                this.lockedPerformanceInventory = this.lockedPerformanceInventory + esopsToBeLocked
-                return "Success"
-            } else {
-                return "Insufficient ESOPs in Inventory."
-            }
 
-
+    fun moveFreePerformanceInventoryToLockedPerformanceInventory(esopsToBeLocked: Long): String {
+        if (this.freePerformanceInventory >= esopsToBeLocked) {
+            this.freePerformanceInventory = this.freePerformanceInventory - esopsToBeLocked
+            this.lockedPerformanceInventory = this.lockedPerformanceInventory + esopsToBeLocked
+            return "Success"
+        } else {
+            return "Insufficient ESOPs in Inventory."
         }
+
+
+    }
 
 }

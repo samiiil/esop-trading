@@ -1,10 +1,11 @@
 package Models
-class Wallet {
-    private var freeMoney: Long=0L
-    private var lockedMoney: Long=0L
 
-    fun addMoneyToWallet(amountToBeAdded:Long){
-        this.freeMoney =  this.freeMoney + amountToBeAdded
+class Wallet {
+    private var freeMoney: Long = 0L
+    private var lockedMoney: Long = 0L
+
+    fun addMoneyToWallet(amountToBeAdded: Long) {
+        this.freeMoney = this.freeMoney + amountToBeAdded
     }
 
     fun getFreeMoney(): Long {
@@ -15,15 +16,16 @@ class Wallet {
         return this.lockedMoney
     }
 
-    fun updateLockedMoney(amountToBeUpdated: Long){
-        this.lockedMoney=this.lockedMoney - amountToBeUpdated
+    fun updateLockedMoney(amountToBeUpdated: Long) {
+        this.lockedMoney = this.lockedMoney - amountToBeUpdated
     }
-    fun moveFreeMoneyToLockedMoney(amountToBeLocked:Long): String {
-        if(this.freeMoney >= amountToBeLocked){
+
+    fun moveFreeMoneyToLockedMoney(amountToBeLocked: Long): String {
+        if (this.freeMoney >= amountToBeLocked) {
             this.freeMoney = this.freeMoney - amountToBeLocked
             this.lockedMoney = this.lockedMoney + amountToBeLocked
             return "Success"
-        }else{
+        } else {
             return "Insufficient balance in wallet."
         }
     }

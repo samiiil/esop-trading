@@ -1,12 +1,12 @@
 package Models
+
 import Services.BuyOrderingComparator
 import Services.SellOrderingComparator
-import java.util.LinkedList
-import java.util.PriorityQueue
+import java.util.*
 
 class Data {
     companion object {
-        val userList : HashMap<String, User> = HashMap ()
+        val userList: HashMap<String, User> = HashMap()
         val registeredEmails = mutableSetOf<String>()
         val registeredPhoneNumbers = mutableSetOf<String>()
 
