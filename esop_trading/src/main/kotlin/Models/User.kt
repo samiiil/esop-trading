@@ -70,14 +70,14 @@ class User(
                 currentOrderDetails["unfilled"] = unfilledOrderExecutionLogs
             } else {
                 if (order.orderStatus == "Partially Filled") {
-                    val paritallyFilledOrderExecutionLogs = ArrayList<Map<String, Any>>()
+                    val partiallyFilledOrderExecutionLogs = ArrayList<Map<String, Any>>()
                     order.orderExecutionLogs.forEach {
                         val currentOrderExecutionLogs = mutableMapOf<String, Any>()
                         currentOrderExecutionLogs["price"] = it.orderExecutionPrice
                         currentOrderExecutionLogs["quantity"] = it.orderExecutionQuantity
-                        paritallyFilledOrderExecutionLogs.add(currentOrderExecutionLogs)
+                        partiallyFilledOrderExecutionLogs.add(currentOrderExecutionLogs)
                     }
-                    currentOrderDetails["partially_filled"] = paritallyFilledOrderExecutionLogs
+                    currentOrderDetails["partially_filled"] = partiallyFilledOrderExecutionLogs
 
                     val unfilledOrderExecutionLogs = ArrayList<Map<String, Any>>()
                     val currentOrderExecutionLogs = mutableMapOf<String, Any>()

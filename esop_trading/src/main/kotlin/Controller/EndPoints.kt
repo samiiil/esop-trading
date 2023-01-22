@@ -176,11 +176,9 @@ class EndPoints {
         response = DataStorage.userList[username]!!.getOrderDetails()
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
+
     @Get("/fees")
-    fun getFees (): HttpResponse<*>{
-
-        return HttpResponse.status<Any>(HttpStatus.OK).body(mapOf(Pair("TotalFees",TOTAL_FEE_COLLECTED)))
-
-
-        }
+    fun getFees(): HttpResponse<*> {
+        return HttpResponse.status<Any>(HttpStatus.OK).body(mapOf(Pair("TotalFees", DataStorage.TOTAL_FEE_COLLECTED)))
+    }
 }
