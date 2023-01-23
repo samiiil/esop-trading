@@ -1,47 +1,57 @@
 package Controller
 
-import Models.DataStorage
+import Models.*
 import Services.Util
+import com.fasterxml.jackson.core.JsonParseException
+import io.micronaut.core.convert.exceptions.ConversionErrorException
+import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.annotation.Body
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.Post
-import io.micronaut.json.tree.JsonObject
+import io.micronaut.http.MutableHttpResponse
+import io.micronaut.http.annotation.*
+import io.micronaut.http.hateoas.JsonError
 
 @Controller("/")
 class EndPoints {
     @Post("/user/register")
-    fun register(@Body body: JsonObject): HttpResponse<*> {
-
+    fun register(@Body body: RegisterInput): HttpResponse<*> {
+        val errorList = arrayListOf<String>()
         //Input Parsing
-        val firstName = body.get("firstName").stringValue.trim()
-        val lastName = body.get("lastName").stringValue.trim()
-        val phoneNumber = body.get("phoneNumber").stringValue.trim()
-        val email = body.get("email").stringValue.trim()
-        val username = body.get("username").stringValue.trim()
-
-
-        val errorMessages: ArrayList<String> = ArrayList()
-
-        if (Util.validateUser(username)) {
-            errorMessages.add("username already exists.")
+//        for(error in Util.validateBody(body)){
+//            errorList.add(error)
+//        }
+        if (errorList.isNotEmpty()) {
+            val response: Map<String, *>
+            response = mapOf("error" to errorList)
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
-        if (Util.validateEmailIds(email)) {
-            errorMessages.add("Email Id already exists.")
-        }
-        if (Util.validatePhoneNumber(phoneNumber)) {
-            errorMessages.add("Phone Number already exists.")
-        }
-        if (errorMessages.size == 0) {
+
+        val firstName: String = body.firstName
+        val lastName: String = body.lastName
+        val phoneNumber: String = body.phoneNumber
+        val email: String = body.email
+        val username: String = body.username
+
+        if (firstName.isEmpty())
+            println("first name is null")
+        if (lastName.isEmpty())
+            println("Last name is null")
+        // println(username)
+
+        for (error in Util.validateFirstName(firstName)) errorList.add(error)
+        for (error in Util.validateLastName(lastName)) errorList.add(error)
+        for (error in Util.validatePhoneNumber(phoneNumber, errorList)) errorList.add(error)
+        for (error in Util.validateEmailIds(email)) errorList.add(error)
+        for (error in Util.validateUserName(username)) errorList.add(error)
+
+        if (errorList.isEmpty()) {
             Util.createUser(username, firstName, lastName, phoneNumber, email)
         }
 
         val response: Map<String, *>
-        if (errorMessages.size > 0) {
-            response = mapOf("error" to errorMessages)
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
+        return if (errorList.isNotEmpty()) {
+            response = mapOf("error" to errorList)
+            HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         } else {
             val res = mutableMapOf<String, String>()
             res["firstName"] = firstName
@@ -55,16 +65,20 @@ class EndPoints {
     }
 
     @Post("/user/{username}/addToWallet")
-    fun addToWallet(username: String, @Body body: JsonObject): HttpResponse<*> {
-
+    fun addToWallet(username: String, @Body body: AddToWalletInput): HttpResponse<*> {
+        val errorMessages: ArrayList<String> = ArrayList<String>()
         //Input Parsing
-        val amountToBeAdded = body.get("amount").bigIntegerValue.toLong()
-
-        val errorMessages: ArrayList<String> = ArrayList()
+        var amountToBeAdded: Long = body.amount.toLong()
 
         val response: Map<String, *>
         if (!Util.validateUser(username)) {
-            errorMessages.add("username does not exists.")
+            errorMessages.add("Username does not exists.")
+
+        }
+        if (amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() <= 0 || amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() >= Util.MAX_AMOUNT) {
+            errorMessages.add("Invalid amount entered")
+        }
+        if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
@@ -75,20 +89,33 @@ class EndPoints {
     }
 
     @Post("/user/{username}/addToInventory")
-    fun addToInventory(username: String, @Body body: JsonObject): HttpResponse<*> {
+    fun addToInventory(username: String, @Body body: AddToInventoryInput): HttpResponse<*> {
 
         //Input Parsing
-        val quantityToBeAdded = body.get("quantity")?.bigIntegerValue?.toLong() ?: 0
-        val typeOfESOP = body.get("esop_type")?.stringValue?.uppercase() ?: "NON-PERFORMANCE"
+        val quantityToBeAdded = body.quantity.toLong()
+        val typeOfESOP = body.esop_type?.uppercase() ?: "NON-PERFORMANCE"
         val errorMessages: ArrayList<String> = ArrayList()
-
         val response: Map<String, *>
-        if (!Util.validateUser(username))
-            errorMessages.add("username does not exists.")
-        if (quantityToBeAdded <= 0 || quantityToBeAdded > 1000)
-            errorMessages.add("Invalid quantity of ESOPs")
+
         if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
             errorMessages.add("Invalid ESOP type")
+        if (!Util.validateUser(username)) {
+            errorMessages.add("username does not exists.")
+        } else {
+            if (typeOfESOP == "NON-PERFORMANCE") {
+                val totalQuantity =
+                    quantityToBeAdded + DataStorage.userList[username]!!.account.inventory.getFreeInventory() + DataStorage.userList[username]!!.account.inventory.getLockedInventory()
+                if (totalQuantity <= 0 || totalQuantity >= Util.MAX_AMOUNT) {
+                    errorMessages.add("Invalid quantity entered")
+                }
+            } else if (typeOfESOP == "PERFORMANCE") {
+                val totalQuantity =
+                    quantityToBeAdded + DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory() + DataStorage.userList[username]!!.account.inventory.getLockedPerformanceInventory()
+                if (totalQuantity <= 0 || totalQuantity >= Util.MAX_AMOUNT) {
+                    errorMessages.add("Invalid quantity entered")
+                }
+            }
+        }
         if (errorMessages.size > 0) {
             response = mapOf("error" to errorMessages)
             return HttpResponse.badRequest(response)
@@ -137,7 +164,7 @@ class EndPoints {
     }
 
     @Post("/user/{username}/createOrder")
-    fun createOrder(username: String, @Body body: JsonObject): HttpResponse<*> {
+    fun createOrder(username: String, @Body body: CreateOrderInput): HttpResponse<*> {
         val errorMessages: ArrayList<String> = ArrayList()
 
         val response: Map<String, *>
@@ -149,20 +176,25 @@ class EndPoints {
         }
 
         //Input Parsing
-        val orderQuantity: Long = body.get("quantity").bigIntegerValue.toLong()
-        val orderType: String = body.get("order_type").stringValue.trim()
-        val orderAmount: Long = body.get("price").bigIntegerValue.toLong()
-        val typeOfESOP: String = body.get("esop_type")?.stringValue ?: "NON-PERFORMANCE".trim().uppercase()
+        val orderQuantity: Long = body.quantity.toLong()
+        val orderType: String = body.order_type.trim().uppercase()
+        val orderAmount: Long = body.price.toLong()
+        val typeOfESOP: String = (body.esop_type ?: "NON-PERFORMANCE").trim().uppercase()
         //Create Order
         val result = DataStorage.userList[username]!!.addOrder(orderQuantity, orderType, orderAmount, typeOfESOP)
 
-        if (result != "Order Placed Successfully.") {
+        if (orderType !in arrayOf("BUY", "SELL"))
+            errorMessages.add("Invalid order type")
+        if (orderType !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
+            errorMessages.add("Invalid type of ESOP")
+
+        if (result != "Order Placed Successfully")
             errorMessages.add(result)
+
+        if(errorMessages.isNotEmpty()){
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
-
-        //response = mapOf("message" to result)
 
         val res = mutableMapOf<String, Any>()
         res["quantity"] = orderQuantity
@@ -185,12 +217,36 @@ class EndPoints {
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
+        if (!Util.validateUser(username)) {
+            errorMessages.add("Username does not exists.")
+            response = mapOf("error" to errorMessages)
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
+        }
         response = DataStorage.userList[username]!!.getOrderDetails()
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 
     @Get("/fees")
     fun getFees(): HttpResponse<*> {
-        return HttpResponse.status<Any>(HttpStatus.OK).body(mapOf(Pair("TotalFees", DataStorage.TOTAL_FEE_COLLECTED)))
+        return HttpResponse.status<Any>(HttpStatus.OK)
+            .body(mapOf(Pair("TotalFees", DataStorage.TOTAL_FEE_COLLECTED)))
+    }
+
+    @Error
+    fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
+        //handles errors in json syntax
+        val errorMap = mutableMapOf<String, ArrayList<String>>()
+        val error = JsonError("Invalid JSON: ${e.message}")
+        errorMap["error"] = arrayListOf<String>("Invalid JSON: ${e.message}")
+        return HttpResponse.badRequest(errorMap)
+    }
+
+    //for handling missing fields in json input
+    @Error
+    fun handleBadRequest(request: HttpRequest<*>, e: ConversionErrorException): Any {
+        println(e)
+        val errorMessages = arrayOf("Add missing fields to the request")
+        val response = mapOf("error" to errorMessages)
+        return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
     }
 }
