@@ -1,4 +1,3 @@
 package Services
 
-class OrderValidations {
-}
+class OrderValidations

@@ -1,4 +1,3 @@
 package Services
 
-class UserValidations {
-}
+class UserValidations
