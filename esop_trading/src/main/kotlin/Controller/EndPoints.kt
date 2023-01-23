@@ -79,19 +79,21 @@ class EndPoints {
         val errorMessages: ArrayList<String> = ArrayList<String>()
         //Input Parsing
         var amountToBeAdded: Long = body.amount.toLong()
-
+        println(username)
         val response: Map<String, *>
         if (!Util.validateUser(username)) {
             errorMessages.add("Username does not exists.")
+        }
 
-        }
-        if (amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() <= 0 || amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() >= Util.MAX_AMOUNT) {
-            errorMessages.add("Invalid amount entered")
-        }
         if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
+
+        if (amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() <= 0 || amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() >= Util.MAX_AMOUNT) {
+            errorMessages.add("Invalid amount entered")
+        }
+
 
         DataStorage.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
         response = mapOf("message" to "$amountToBeAdded amount added to account")
