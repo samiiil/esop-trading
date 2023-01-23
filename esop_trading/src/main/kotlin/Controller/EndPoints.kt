@@ -180,18 +180,17 @@ class EndPoints {
         val orderType: String = body.order_type.trim().uppercase()
         val orderAmount: Long = body.price.toLong()
         val typeOfESOP: String = (body.esop_type ?: "NON-PERFORMANCE").trim().uppercase()
-        //Create Order
-        val result = DataStorage.userList[username]!!.addOrder(orderQuantity, orderType, orderAmount, typeOfESOP)
 
         if (orderType !in arrayOf("BUY", "SELL"))
             errorMessages.add("Invalid order type")
-        if (orderType !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
+        if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
             errorMessages.add("Invalid type of ESOP")
 
-        if (result != "Order Placed Successfully")
-            errorMessages.add(result)
-
         if(errorMessages.isNotEmpty()){
+            //Create Order
+            val result = DataStorage.userList[username]!!.addOrder(orderQuantity, orderType, orderAmount, typeOfESOP)
+            if (result != "Order Placed Successfully")
+                errorMessages.add(result)
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
