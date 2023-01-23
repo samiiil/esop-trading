@@ -186,22 +186,23 @@ class EndPoints {
         if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
             errorMessages.add("Invalid type of ESOP")
 
-        if(errorMessages.isNotEmpty()){
+        if(errorMessages.isEmpty()){
             //Create Order
             val result = DataStorage.userList[username]!!.addOrder(orderQuantity, orderType, orderAmount, typeOfESOP)
             if (result != "Order Placed Successfully")
                 errorMessages.add(result)
-            response = mapOf("error" to errorMessages)
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
+            else{
+                val res = mutableMapOf<String, Any>()
+                res["quantity"] = orderQuantity
+                res["order_type"] = orderType
+                res["price"] = orderAmount
+
+                return HttpResponse.status<Any>(HttpStatus.OK).body(res)
+            }
+
         }
-
-        val res = mutableMapOf<String, Any>()
-        res["quantity"] = orderQuantity
-        res["order_type"] = orderType
-        res["price"] = orderAmount
-
-
-        return HttpResponse.status<Any>(HttpStatus.OK).body(res)
+        val res = mapOf("error" to errorMessages)
+        return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(res)
     }
 
     @Get("/user/{username}/orderHistory")
