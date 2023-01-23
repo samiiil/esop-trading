@@ -1,3 +1,3 @@
 package Models
 
-data class AddToWalletInput(val amount: Int)
+data class AddToWalletInput(val amount: Int? = null)

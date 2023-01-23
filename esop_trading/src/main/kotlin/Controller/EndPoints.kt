@@ -78,11 +78,16 @@ class EndPoints {
     fun addToWallet(username: String, @Body body: AddToWalletInput): HttpResponse<*> {
         val errorMessages: ArrayList<String> = ArrayList<String>()
         //Input Parsing
-        var amountToBeAdded: Long = body.amount.toLong()
-        println(username)
+
+        val amountToBeAdded: Long? = body.amount?.toLong()
+
         val response: Map<String, *>
         if (!Util.validateUser(username)) {
             errorMessages.add("Username does not exists.")
+        }
+
+        if(amountToBeAdded == null){
+            errorMessages.add("Amount field is missing")
         }
 
         if (errorMessages.isNotEmpty()) {
@@ -90,12 +95,12 @@ class EndPoints {
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
-        if (amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() <= 0 || amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() >= Util.MAX_AMOUNT) {
-            errorMessages.add("Invalid amount entered")
+        if(amountToBeAdded != null){
+            if (amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() <= 0 || amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() >= Util.MAX_AMOUNT) {
+                errorMessages.add("Invalid amount entered")
+            }
+            DataStorage.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
         }
-
-
-        DataStorage.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
         response = mapOf("message" to "$amountToBeAdded amount added to account")
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
