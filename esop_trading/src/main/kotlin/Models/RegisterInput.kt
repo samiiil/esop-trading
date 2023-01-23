@@ -1,9 +1,9 @@
 package Models
 
 data class RegisterInput(
-    val firstName: String,
-    val lastName: String,
-    val email: String,
-    val phoneNumber: String,
-    val username: String,
+    val firstName: String? = null,
+    val lastName: String? = null,
+    val email: String? = null,
+    val phoneNumber: String? = null,
+    val username: String? = null,
 )

@@ -53,9 +53,11 @@ class Util {
             return errorList
         }
 
-        fun validateFirstName(name: String): ArrayList<String> {
+        fun validateFirstName(name: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
-
+            if(name.isNullOrBlank()){
+                return errorList
+            }
             if (name.length < 3) {
                 errorList.add("First name has to be at least three characters.")
             }
@@ -65,9 +67,11 @@ class Util {
             return errorList
         }
 
-        fun validateLastName(name: String): ArrayList<String> {
+        fun validateLastName(name: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
-            if (name.length < 1) {
+            if(name.isNullOrBlank())
+                return errorList
+            if (name.isEmpty()) {
                 errorList.add("Last name has to be at least one characters.")
             }
             if (!name.matches(Regex("([A-Za-z]+ ?)+"))) {
@@ -78,15 +82,18 @@ class Util {
             return errorList
         }
 
-        fun validateUserName(username: String): ArrayList<String> {
+        fun validateUserName(username: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
+            if(username.isNullOrBlank()){
+                return errorList
+            }
             if (DataStorage.userList.contains(username)) {
                 errorList.add("Username already taken")
             }
             if (username.length < 3) {
                 errorList.add("Username has to be at least three characters.")
             }
-            if (!username.matches(Regex("_*[A-Za-z][\\w_]*"))) {
+            if (!username.matches(Regex("[_\\d]*[A-Za-z][\\w_]*"))) {
                 errorList.add("Username can only contain characters,numbers and underscores and must have at least one character.")
             }
             return errorList
@@ -100,8 +107,11 @@ class Util {
             return false
         }
 
-        fun validateEmailIds(emailId: String): List<String> {
+        fun validateEmailIds(emailId: String?): Collection<String> {
             val errorList = mutableSetOf<String>()
+            if(emailId.isNullOrBlank()){
+                return errorList
+            }
             if (DataStorage.registeredEmails.contains(emailId)) {
                 errorList.add("Email already exists")
             }
@@ -140,8 +150,11 @@ class Util {
             return errorList.toList()
         }
 
-        fun validatePhoneNumber(phoneNumber: String, errorList: ArrayList<String>): ArrayList<String> {
+        fun validatePhoneNumber(phoneNumber: String?, errorList: ArrayList<String>): ArrayList<String> {
             val errorList = arrayListOf<String>()
+            if(phoneNumber.isNullOrBlank()){
+                return errorList
+            }
             if (DataStorage.registeredPhoneNumbers.contains(phoneNumber)) {
                 errorList.add("Phone number already exists")
             }

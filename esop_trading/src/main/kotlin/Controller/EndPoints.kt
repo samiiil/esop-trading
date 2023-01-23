@@ -16,27 +16,34 @@ class EndPoints {
     @Post("/user/register")
     fun register(@Body body: RegisterInput): HttpResponse<*> {
         val errorList = arrayListOf<String>()
-        //Input Parsing
-//        for(error in Util.validateBody(body)){
-//            errorList.add(error)
-//        }
+
         if (errorList.isNotEmpty()) {
             val response: Map<String, *>
             response = mapOf("error" to errorList)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
-        val firstName: String = body.firstName
-        val lastName: String = body.lastName
-        val phoneNumber: String = body.phoneNumber
-        val email: String = body.email
-        val username: String = body.username
+        if(body.firstName.isNullOrBlank()){
+            errorList.add("firstName is missing")
+        }
+        if(body.lastName.isNullOrBlank()){
+            errorList.add("lastName is missing")
+        }
+        if(body.phoneNumber.isNullOrBlank()){
+            errorList.add("phoneNumber is missing")
+        }
+        if(body.email.isNullOrBlank()){
+            errorList.add("email is missing")
+        }
+        if(body.username.isNullOrBlank()){
+            errorList.add("username is missing")
+        }
 
-        if (firstName.isEmpty())
-            println("first name is null")
-        if (lastName.isEmpty())
-            println("Last name is null")
-        // println(username)
+        val firstName: String? = body.firstName
+        val lastName: String? = body.lastName
+        val phoneNumber: String? = body.phoneNumber
+        val email: String? = body.email
+        val username: String? = body.username
 
         for (error in Util.validateFirstName(firstName)) errorList.add(error)
         for (error in Util.validateLastName(lastName)) errorList.add(error)
@@ -45,23 +52,26 @@ class EndPoints {
         for (error in Util.validateUserName(username)) errorList.add(error)
 
         if (errorList.isEmpty()) {
-            Util.createUser(username, firstName, lastName, phoneNumber, email)
+            if (username != null && firstName!= null && lastName!= null &&  phoneNumber!= null && email!= null) {
+
+                    Util.createUser(username, firstName, lastName, phoneNumber, email)
+
+            }
         }
 
         val response: Map<String, *>
-        return if (errorList.isNotEmpty()) {
+        if (errorList.isNotEmpty()) {
             response = mapOf("error" to errorList)
-            HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
-        } else {
-            val res = mutableMapOf<String, String>()
-            res["firstName"] = firstName
-            res["lastName"] = lastName
-            res["phoneNumber"] = phoneNumber
-            res["email"] = email
-            res["username"] = username
-           // response = mapOf("message" to "User created successfully!!")
-            return HttpResponse.status<Any>(HttpStatus.OK).body(res)
+            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
+        val res = mutableMapOf<String, String>()
+        res["firstName"] = firstName!!
+        res["lastName"] = lastName!!
+        res["phoneNumber"] = phoneNumber!!
+        res["email"] = email!!
+        res["username"] = username!!
+        // response = mapOf("message" to "User created successfully!!")
+        return HttpResponse.status<Any>(HttpStatus.OK).body(res)
     }
 
     @Post("/user/{username}/addToWallet")
