@@ -185,7 +185,7 @@ class EndPoints {
 
         if (orderType !in arrayOf("BUY", "SELL"))
             errorMessages.add("Invalid order type")
-        if (orderType !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
+        if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
             errorMessages.add("Invalid type of ESOP")
 
         if (result != "Order Placed Successfully")
