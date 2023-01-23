@@ -225,12 +225,14 @@ class Util {
         }
 
         fun matchOrders() {
-            val buyOrders = DataStorage.buyList.iterator()
-            while (buyOrders.hasNext()) {
-                val currentBuyOrder = buyOrders.next()
-                matchWithPerformanceSellOrders(currentBuyOrder)
-                matchWithNonPerformanceSellOrders(currentBuyOrder)
-            }
+            val buyOrders = DataStorage.buyList
+            if(buyOrders.isEmpty()) return
+            val currentBuyOrder = buyOrders.poll()
+            matchWithPerformanceSellOrders(currentBuyOrder)
+            matchWithNonPerformanceSellOrders(currentBuyOrder)
+
+            if(currentBuyOrder.remainingOrderQuantity > 0) buyOrders.add(currentBuyOrder)
+            else matchOrders()
         }
 
         private fun matchWithPerformanceSellOrders(buyOrder: Order) {
@@ -238,26 +240,22 @@ class Util {
             while (performanceSellOrders.hasNext() && buyOrder.remainingOrderQuantity > 0) {
                 val currentPerformanceSellOrder = performanceSellOrders.next()
                 processOrder(buyOrder, currentPerformanceSellOrder, true)
-                if (currentPerformanceSellOrder.remainingOrderQuantity <= buyOrder.remainingOrderQuantity)
+                if (currentPerformanceSellOrder.remainingOrderQuantity == 0L)
                     performanceSellOrders.remove()
-                if (buyOrder.remainingOrderQuantity <= currentPerformanceSellOrder.remainingOrderQuantity)
-                    DataStorage.buyList.remove(buyOrder)
             }
         }
 
         private fun matchWithNonPerformanceSellOrders(buyOrder: Order) {
-            val sellOrders = DataStorage.sellList.iterator()
-            while (sellOrders.hasNext() && buyOrder.remainingOrderQuantity > 0) {
-                val currentSellOrder = sellOrders.next()
+            val sellOrders = DataStorage.sellList
+            while (sellOrders.isNotEmpty() && buyOrder.remainingOrderQuantity > 0) {
+                val currentSellOrder = sellOrders.poll()
 
                 //Sell list is sorted to have best deals come first.
                 //If the top of the heap is not good enough, no point searching further
                 if (currentSellOrder.orderPrice > buyOrder.orderPrice) break
                 processOrder(buyOrder, currentSellOrder, false)
-                if (currentSellOrder.remainingOrderQuantity <= buyOrder.remainingOrderQuantity)
-                    sellOrders.remove()
-                if (buyOrder.remainingOrderQuantity <= currentSellOrder.remainingOrderQuantity)
-                    DataStorage.buyList.remove(buyOrder)
+                if (currentSellOrder.remainingOrderQuantity > 0)
+                    sellOrders.add(currentSellOrder)
             }
         }
 
