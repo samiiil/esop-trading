@@ -129,7 +129,7 @@ class Util {
             val sellerAccount = DataStorage.userList[sellOrder.userName]!!.account
             val orderAmount = orderQuantity * orderExecutionPrice
             sellerAccount.inventory.updateLockedInventory(orderQuantity, isPerformanceESOP)
-            sellerAccount.wallet.addMoneyToWallet((orderAmount * (1 - DataStorage.COMMISSION_FEE_PERCENTAGE)).roundToLong())
+            sellerAccount.wallet.addMoneyToWallet((orderAmount * (1 - DataStorage.COMMISSION_FEE_PERCENTAGE * 0.01)).roundToLong())
         }
 
         private fun updateBuyerInventoryAndWallet(buyOrder: Order, orderQuantity: Long, orderExecutionPrice: Long) {

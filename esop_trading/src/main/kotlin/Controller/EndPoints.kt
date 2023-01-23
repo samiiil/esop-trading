@@ -43,8 +43,14 @@ class EndPoints {
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         } else {
-            response = mapOf("message" to "User created successfully!!")
-            return HttpResponse.status<Any>(HttpStatus.OK).body(response)
+            val res = mutableMapOf<String, String>()
+            res["firstName"] = firstName
+            res["lastName"] = lastName
+            res["phoneNumber"] = phoneNumber
+            res["email"] = email
+            res["username"] = username
+           // response = mapOf("message" to "User created successfully!!")
+            return HttpResponse.status<Any>(HttpStatus.OK).body(res)
         }
     }
 
@@ -156,9 +162,15 @@ class EndPoints {
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
-        response = mapOf("message" to result)
+        //response = mapOf("message" to result)
 
-        return HttpResponse.status<Any>(HttpStatus.OK).body(response)
+        val res = mutableMapOf<String, Any>()
+        res["quantity"] = orderQuantity
+        res["order_type"] = orderType
+        res["price"] = orderAmount
+
+
+        return HttpResponse.status<Any>(HttpStatus.OK).body(res)
     }
 
     @Get("/user/{username}/orderHistory")
