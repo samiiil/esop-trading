@@ -189,7 +189,7 @@ class EndPoints {
         if(errorMessages.isEmpty()){
             //Create Order
             val result = DataStorage.userList[username]!!.addOrder(orderQuantity, orderType, orderAmount, typeOfESOP)
-            if (result != "Order Placed Successfully")
+            if (result != "Order Placed Successfully.")
                 errorMessages.add(result)
             else{
                 val res = mutableMapOf<String, Any>()
