@@ -25,7 +25,7 @@ class User(
         } else if (orderType == "SELL") {
             if (typeOfESOP == "NON-PERFORMANCE")
                 response = account.inventory.moveFreeInventoryToLockedInventory(orderQuantity)
-            else
+            else if (typeOfESOP == "PERFORMANCE")
                 response = account.inventory.moveFreePerformanceInventoryToLockedPerformanceInventory(orderQuantity)
         }
         if (response == "Success") {

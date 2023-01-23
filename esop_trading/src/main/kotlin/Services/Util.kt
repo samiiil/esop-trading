@@ -100,8 +100,8 @@ class Util {
             return false
         }
 
-        fun validateEmailIds(emailId: String): ArrayList<String> {
-            val errorList = arrayListOf<String>()
+        fun validateEmailIds(emailId: String): List<String> {
+            val errorList = mutableSetOf<String>()
             if (DataStorage.registeredEmails.contains(emailId)) {
                 errorList.add("Email already exists")
             }
@@ -121,7 +121,7 @@ class Util {
 //            }
 
             if (!emailId.matches(Regex("^[a-zA-Z0-9.!#\$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*\$"))) {
-                errorList.add("Invalid email address")
+                errorList.add("Invalid Email address")
             }
             var index = 0
             if (emailId[index] == '.') {
@@ -137,7 +137,7 @@ class Util {
                     index++
                 }
             }
-            return errorList
+            return errorList.toList()
         }
 
         fun validatePhoneNumber(phoneNumber: String, errorList: ArrayList<String>): ArrayList<String> {
