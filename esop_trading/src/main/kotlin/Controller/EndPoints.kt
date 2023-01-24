@@ -10,6 +10,7 @@ import io.micronaut.http.HttpStatus
 import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
 import io.micronaut.http.hateoas.JsonError
+import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
 
 @Controller("/")
 class EndPoints {
@@ -265,5 +266,10 @@ class EndPoints {
         val errorMessages = arrayOf("Add missing fields to the request")
         val response = mapOf("error" to errorMessages)
         return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
+    }
+
+    @Error(exception = UnsatisfiedBodyRouteException::class)
+    fun handleEmptyBody(request: HttpRequest<*>, e: UnsatisfiedBodyRouteException): HttpResponse<Map<String, Array<String>>>{
+        return HttpResponse.badRequest(mapOf("error" to arrayOf("Request body is missing")))
     }
 }
