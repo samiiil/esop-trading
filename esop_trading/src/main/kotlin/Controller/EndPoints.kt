@@ -187,24 +187,34 @@ class EndPoints {
 
         val response: Map<String, *>
 
-        if (!Util.validateUser(username)) {
+        if (!Util.validateUser(username))
             errorMessages.add("username does not exists.")
+        if(body.order_type.isNullOrBlank())
+            errorMessages.add("order_type is missing, order type should be BUY or SELL")
+        if(body.price == null)
+            errorMessages.add("price for the order is missing")
+        if(body.quantity == null)
+            errorMessages.add("quantity field for order is missing")
+        if(body.order_type != null && body.order_type == "SELL" && body.esop_type.isNullOrBlank()){
+            errorMessages.add("esop_type is missing, SELL order requires esop_type")
+        }
+        if(errorMessages.isNotEmpty()){
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
         //Input Parsing
-        val orderQuantity: Long = body.quantity.toLong()
-        val orderType: String = body.order_type.trim().uppercase()
-        val orderAmount: Long = body.price.toLong()
+        val orderQuantity: Long? = body.quantity?.toLong()
+        val orderType: String? = body.order_type?.trim()?.uppercase()
+        val orderAmount: Long? = body.price?.toLong()
         val typeOfESOP: String = (body.esop_type ?: "NON-PERFORMANCE").trim().uppercase()
 
         if (orderType !in arrayOf("BUY", "SELL"))
             errorMessages.add("Invalid order type")
         if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
-            errorMessages.add("Invalid type of ESOP")
+            errorMessages.add("Invalid type of ESOP, ESOP type should be PERFORMANCE or NON_PERFORMANCE")
 
-        if(errorMessages.isEmpty()){
+        if(errorMessages.isEmpty() && orderAmount != null && orderType != null && orderQuantity != null ){
             //Create Order
             val result = DataStorage.userList[username]!!.addOrder(orderQuantity, orderType, orderAmount, typeOfESOP)
             if (result != "Order Placed Successfully.")
