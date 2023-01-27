@@ -1,7 +1,7 @@
-package Controller
+package controller
 
-import Models.*
-import Services.Util
+import models.*
+import services.Util
 import com.fasterxml.jackson.core.JsonParseException
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest

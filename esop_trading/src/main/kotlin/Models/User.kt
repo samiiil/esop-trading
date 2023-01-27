@@ -1,6 +1,6 @@
-package Models
+package models
 
-import Services.Util
+import services.Util
 
 class User(
     val username: String,

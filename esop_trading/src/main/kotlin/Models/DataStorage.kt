@@ -1,7 +1,7 @@
-package Models
+package models
 
-import Services.BuyOrderingComparator
-import Services.SellOrderingComparator
+import services.BuyOrderingComparator
+import services.SellOrderingComparator
 import java.util.*
 
 class DataStorage {

@@ -1,4 +1,4 @@
-package Models
+package models
 
 class Wallet {
     private var freeMoney: Long = 0L

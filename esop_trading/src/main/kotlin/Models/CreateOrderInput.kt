@@ -1,4 +1,4 @@
-package Models
+package models
 
 data class CreateOrderInput(val quantity: Int? = null,
                             val esop_type: String?,

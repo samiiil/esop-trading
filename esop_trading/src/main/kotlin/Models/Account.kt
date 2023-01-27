@@ -1,4 +1,4 @@
-package Models
+package models
 
 class Account {
     val wallet: Wallet = Wallet()

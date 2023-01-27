@@ -1,6 +1,6 @@
-package Services
+package services
 
-import Models.Order
+import models.Order
 
 class SellOrderingComparator {
     companion object : Comparator<Order> {

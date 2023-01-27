@@ -1,4 +1,4 @@
-package Models
+package models
 
 class Inventory {
     private var freeInventory: Long = 0L
