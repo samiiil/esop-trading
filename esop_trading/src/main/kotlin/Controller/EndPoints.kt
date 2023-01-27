@@ -56,7 +56,7 @@ class EndPoints {
         if (errorList.isEmpty()) {
             if (username != null && firstName!= null && lastName!= null &&  phoneNumber!= null && email!= null) {
 
-                    Util.createUser(username, firstName, lastName, phoneNumber, email)
+                    User(username, firstName, lastName, phoneNumber, email)
 
             }
         }

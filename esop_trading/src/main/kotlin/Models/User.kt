@@ -9,6 +9,13 @@ class User(
     val phoneNumber: String,
     val emailId: String
 ) {
+
+    init {
+        DataStorage.userList[username] = this
+        DataStorage.registeredEmails.add(emailId)
+        DataStorage.registeredPhoneNumbers.add(phoneNumber)
+    }
+
     val account: Account = Account()
     val orders: ArrayList<Order> = ArrayList()
 

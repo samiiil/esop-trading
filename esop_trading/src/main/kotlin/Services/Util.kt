@@ -3,8 +3,6 @@ package services
 import models.DataStorage
 import models.Order
 import models.OrderExecutionLogs
-import models.User
-import io.micronaut.json.tree.JsonObject
 import kotlin.math.min
 import kotlin.math.roundToLong
 
@@ -12,19 +10,6 @@ import kotlin.math.roundToLong
 class Util {
     companion object {
         const val MAX_AMOUNT = 1000000000
-
-        fun createUser(
-            userName: String,
-            firstName: String,
-            lastName: String,
-            phoneNumber: String,
-            emailId: String
-        ) {
-
-            DataStorage.userList.put(userName, User(userName, firstName, lastName, phoneNumber, emailId))
-            DataStorage.registeredPhoneNumbers.add(phoneNumber)
-            DataStorage.registeredEmails.add(emailId)
-        }
 
         @Synchronized
         fun generateOrderId(): Long {
