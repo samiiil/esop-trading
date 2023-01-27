@@ -11,6 +11,7 @@ import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
 import io.micronaut.http.hateoas.JsonError
 import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
+import services.Validations
 
 @Controller("/")
 class EndPoints {
@@ -46,11 +47,11 @@ class EndPoints {
         val email: String? = body.email
         val username: String? = body.username
 
-        for (error in Util.validateFirstName(firstName)) errorList.add(error)
-        for (error in Util.validateLastName(lastName)) errorList.add(error)
-        for (error in Util.validatePhoneNumber(phoneNumber, errorList)) errorList.add(error)
-        for (error in Util.validateEmailIds(email)) errorList.add(error)
-        for (error in Util.validateUserName(username)) errorList.add(error)
+        for (error in Validations.validateFirstName(firstName)) errorList.add(error)
+        for (error in Validations.validateLastName(lastName)) errorList.add(error)
+        for (error in Validations.validatePhoneNumber(phoneNumber, errorList)) errorList.add(error)
+        for (error in Validations.validateEmailIds(email)) errorList.add(error)
+        for (error in Validations.validateUserName(username)) errorList.add(error)
 
         if (errorList.isEmpty()) {
             if (username != null && firstName!= null && lastName!= null &&  phoneNumber!= null && email!= null) {
@@ -83,7 +84,7 @@ class EndPoints {
         val amountToBeAdded: Long? = body.amount?.toLong()
 
         val response: Map<String, *>
-        if (!Util.validateUser(username)) {
+        if (!Validations.validateUser(username)) {
             errorMessages.add("Username does not exists.")
         }
 
@@ -117,7 +118,7 @@ class EndPoints {
 
         if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
             errorMessages.add("Invalid ESOP type")
-        if (!Util.validateUser(username)) {
+        if (!Validations.validateUser(username)) {
             errorMessages.add("username does not exists.")
         } else {
             if (typeOfESOP == "NON-PERFORMANCE") {
@@ -150,7 +151,7 @@ class EndPoints {
         val errorMessages: ArrayList<String> = ArrayList()
 
         val response: Map<String, *>
-        if (!Util.validateUser(username)) {
+        if (!Validations.validateUser(username)) {
             errorMessages.add("username does not exists.")
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
@@ -187,7 +188,7 @@ class EndPoints {
 
         val response: Map<String, *>
 
-        if (!Util.validateUser(username))
+        if (!Validations.validateUser(username))
             errorMessages.add("username does not exists.")
         if(body.order_type.isNullOrBlank())
             errorMessages.add("order_type is missing, order type should be BUY or SELL")
@@ -239,13 +240,13 @@ class EndPoints {
 
         val response: Map<String, *>
 
-        if (!Util.validateUser(username)) {
+        if (!Validations.validateUser(username)) {
             errorMessages.add("username does not exists.")
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
 
-        if (!Util.validateUser(username)) {
+        if (!Validations.validateUser(username)) {
             errorMessages.add("Username does not exists.")
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
