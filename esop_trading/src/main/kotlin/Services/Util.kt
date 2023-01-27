@@ -5,7 +5,6 @@ import Models.Order
 import Models.OrderExecutionLogs
 import Models.User
 import io.micronaut.json.tree.JsonObject
-import org.jetbrains.annotations.NotNull
 import kotlin.math.min
 import kotlin.math.roundToLong
 
@@ -187,7 +186,7 @@ class Util {
         }
 
         fun createUser(
-            @NotNull userName: String,
+            userName: String,
             firstName: String,
             lastName: String,
             phoneNumber: String,

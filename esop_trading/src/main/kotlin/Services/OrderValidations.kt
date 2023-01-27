@@ -1,3 +1,0 @@
-package Services
-
-class OrderValidations
