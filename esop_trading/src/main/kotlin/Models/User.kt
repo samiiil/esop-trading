@@ -22,12 +22,12 @@ class User(
     fun addOrder(
         orderQuantity: Long,
         orderType: String,
-        orderAmount: Long,
+        orderPrice: Long,
         typeOfESOP: String = "NON-PERFORMANCE"
     ): String {
         var response = ""
         if (orderType == "BUY") {
-            val amountRequiredToBuy = orderQuantity * orderAmount
+            val amountRequiredToBuy = orderQuantity * orderPrice
             response = account.wallet.moveFreeMoneyToLockedMoney(amountRequiredToBuy)
         } else if (orderType == "SELL") {
             if (typeOfESOP == "NON-PERFORMANCE")
@@ -36,7 +36,7 @@ class User(
                 response = account.inventory.moveFreePerformanceInventoryToLockedPerformanceInventory(orderQuantity)
         }
         if (response == "Success") {
-            val orderObj = Order(this.username, Util.generateOrderId(), orderQuantity, orderAmount, orderType)
+            val orderObj = Order(this.username, Util.generateOrderId(), orderQuantity, orderPrice, orderType)
             orders.add(orderObj)
             if (orderType == "BUY") {
                 Util.addOrderToBuyList(orderObj)

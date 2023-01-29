@@ -207,7 +207,7 @@ class EndPoints {
         //Input Parsing
         val orderQuantity: Long? = body.quantity?.toLong()
         val orderType: String? = body.order_type?.trim()?.uppercase()
-        val orderAmount: Long? = body.price?.toLong()
+        val orderPrice: Long? = body.price?.toLong()
         val typeOfESOP: String = (body.esop_type ?: "NON-PERFORMANCE").trim().uppercase()
 
         if (orderType !in arrayOf("BUY", "SELL"))
@@ -215,16 +215,16 @@ class EndPoints {
         if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
             errorMessages.add("Invalid type of ESOP, ESOP type should be PERFORMANCE or NON_PERFORMANCE")
 
-        if(errorMessages.isEmpty() && orderAmount != null && orderType != null && orderQuantity != null ){
+        if(errorMessages.isEmpty() && orderPrice != null && orderType != null && orderQuantity != null ){
             //Create Order
-            val result = DataStorage.userList[username]!!.addOrder(orderQuantity, orderType, orderAmount, typeOfESOP)
+            val result = DataStorage.userList[username]!!.addOrder(orderQuantity, orderType, orderPrice, typeOfESOP)
             if (result != "Order Placed Successfully.")
                 errorMessages.add(result)
             else{
                 val res = mutableMapOf<String, Any>()
                 res["quantity"] = orderQuantity
                 res["order_type"] = orderType
-                res["price"] = orderAmount
+                res["price"] = orderPrice
 
                 return HttpResponse.status<Any>(HttpStatus.OK).body(res)
             }
