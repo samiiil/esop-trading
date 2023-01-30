@@ -7,7 +7,6 @@ import kotlin.math.roundToLong
 
 class Util {
     companion object {
-        const val MAX_AMOUNT = 1000000000
 
         @Synchronized
         fun generateOrderId(): Long {

@@ -28,16 +28,18 @@ class User(
         val errorList = ArrayList<String>()
         val amountRequiredToBuy = orderQuantity * orderPrice
         if (orderType == "BUY") {
-            if(account.inventory.getFreeInventory() + account.inventory.getLockedInventory() + orderQuantity > Util.MAX_AMOUNT)
+            if(account.inventory.getFreeInventory() + account.inventory.getLockedInventory() + orderQuantity > DataStorage.MAX_QUANTITY)
                 errorList.add("Inventory threshold will be exceeded")
-            errorList.add(account.wallet.moveFreeMoneyToLockedMoney(amountRequiredToBuy))
+            val res = account.wallet.moveFreeMoneyToLockedMoney(amountRequiredToBuy)
+            if(res != "Success") errorList.add(res)
         } else if (orderType == "SELL") {
-            if(account.wallet.getFreeMoney() + account.wallet.getLockedMoney() + amountRequiredToBuy > Util.MAX_AMOUNT)
+            if(account.wallet.getFreeMoney() + account.wallet.getLockedMoney() + amountRequiredToBuy > DataStorage.MAX_AMOUNT)
                 errorList.add("Wallet threshold will be exceeded")
-            if (typeOfESOP == "NON-PERFORMANCE")
-                errorList.add(account.inventory.moveFreeInventoryToLockedInventory(orderQuantity))
-            else if (typeOfESOP == "PERFORMANCE")
-                errorList.add(account.inventory.moveFreePerformanceInventoryToLockedPerformanceInventory(orderQuantity))
+            val res = if (typeOfESOP == "NON-PERFORMANCE")
+                account.inventory.moveFreeInventoryToLockedInventory(orderQuantity)
+            else
+                account.inventory.moveFreePerformanceInventoryToLockedPerformanceInventory(orderQuantity)
+            if(res != "Success") errorList.add(res)
         }
         if (errorList.isEmpty()) {
             val orderObj = Order(this.username, Util.generateOrderId(), orderQuantity, orderPrice, orderType)

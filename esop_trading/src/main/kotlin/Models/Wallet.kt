@@ -26,7 +26,7 @@ class Wallet {
             this.lockedMoney = this.lockedMoney + amountToBeLocked
             return "Success"
         } else {
-            return "Insufficient balance in wallet."
+            return "Insufficient balance in wallet"
         }
     }
 }
