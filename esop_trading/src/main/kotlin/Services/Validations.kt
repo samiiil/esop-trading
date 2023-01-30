@@ -109,37 +109,16 @@ class Validations {
                 errorList.add("Email already exists")
             }
 
-
-//            val EMAIL_ADDRESS_PATTERN = Pattern.compile(
-//                "[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}" +
-//                        "\\@" +
-//                        "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
-//                        "(" +
-//                        "\\." +
-//                        "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
-//                        ")+"
-//            )
-//            if(!EMAIL_ADDRESS_PATTERN.matcher(emailId).matches()){
-//                errorList.add("Invalid email address")
-//            }
-
-            if (!emailId.matches(Regex("^[a-zA-Z0-9.!#\$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*\$"))) {
+            val hyphens: String = "--"
+            val dots: String = ".."
+            if(emailId.contains(hyphens) || emailId.contains(dots)){
                 errorList.add("Invalid Email address")
             }
-            var index = 0
-            if (emailId[index] == '.') {
+            println(emailId)
+            if (!emailId.matches(Regex("^[a-zA-Z0-9.!#\$%&'*+/=?^_`{|}\"\" ~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*\$"))) {
                 errorList.add("Invalid Email address")
-            } else {
-                while (index < emailId.length) {
-                    if (emailId[index] == '.') {
-                        if (emailId[index] == emailId[index + 1]) {
-                            errorList.add("Invalid Email address")
-                            break
-                        }
-                    }
-                    index++
-                }
             }
+
             return errorList.toList()
         }
 
