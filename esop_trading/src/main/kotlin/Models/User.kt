@@ -24,18 +24,22 @@ class User(
         orderType: String,
         orderPrice: Long,
         typeOfESOP: String = "NON-PERFORMANCE"
-    ): String {
-        var response = ""
+    ): ArrayList<String> {
+        val errorList = ArrayList<String>()
+        val amountRequiredToBuy = orderQuantity * orderPrice
         if (orderType == "BUY") {
-            val amountRequiredToBuy = orderQuantity * orderPrice
-            response = account.wallet.moveFreeMoneyToLockedMoney(amountRequiredToBuy)
+            if(account.inventory.getFreeInventory() + account.inventory.getLockedInventory() + orderQuantity > Util.MAX_AMOUNT)
+                errorList.add("Inventory threshold will be exceeded")
+            errorList.add(account.wallet.moveFreeMoneyToLockedMoney(amountRequiredToBuy))
         } else if (orderType == "SELL") {
+            if(account.wallet.getFreeMoney() + account.wallet.getLockedMoney() + amountRequiredToBuy > Util.MAX_AMOUNT)
+                errorList.add("Wallet threshold will be exceeded")
             if (typeOfESOP == "NON-PERFORMANCE")
-                response = account.inventory.moveFreeInventoryToLockedInventory(orderQuantity)
+                errorList.add(account.inventory.moveFreeInventoryToLockedInventory(orderQuantity))
             else if (typeOfESOP == "PERFORMANCE")
-                response = account.inventory.moveFreePerformanceInventoryToLockedPerformanceInventory(orderQuantity)
+                errorList.add(account.inventory.moveFreePerformanceInventoryToLockedPerformanceInventory(orderQuantity))
         }
-        if (response == "Success") {
+        if (errorList.isEmpty()) {
             val orderObj = Order(this.username, Util.generateOrderId(), orderQuantity, orderPrice, orderType)
             orders.add(orderObj)
             if (orderType == "BUY") {
@@ -48,10 +52,8 @@ class User(
                 }
             }
             Util.matchOrders()
-            return "Order Placed Successfully."
-        } else {
-            return response
         }
+        return errorList
     }
 
     fun getOrderDetails(): Map<String, *> {
