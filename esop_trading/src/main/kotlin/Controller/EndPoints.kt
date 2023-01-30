@@ -11,11 +11,7 @@ import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
 import io.micronaut.http.hateoas.JsonError
 import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
-<<<<<<< Updated upstream
 import services.Validations
-=======
-import javax.xml.crypto.Data
->>>>>>> Stashed changes
 
 @Controller("/")
 class EndPoints {
