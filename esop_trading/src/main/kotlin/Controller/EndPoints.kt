@@ -145,7 +145,6 @@ class EndPoints {
 
         else if(quantityToBeAdded != null) {
             if (typeOfESOP == "NON-PERFORMANCE") {
-                println(username)
                 val freeInventory = DataStorage.userList[username]!!.account.inventory.getFreeInventory()
                 val lockedInventory = DataStorage.userList[username]!!.account.inventory.getLockedInventory()
                 val totalQuantity = freeInventory + lockedInventory + quantityToBeAdded
@@ -245,7 +244,7 @@ class EndPoints {
         if (orderType !in arrayOf("BUY", "SELL"))
             errorMessages.add("Invalid order type")
         if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
-            errorMessages.add("Invalid type of ESOP, ESOP type should be PERFORMANCE or NON_PERFORMANCE")
+            errorMessages.add("Invalid type of ESOP, ESOP type should be PERFORMANCE or NON-PERFORMANCE")
 
         if(errorMessages.isEmpty() && orderPrice != null && orderType != null && orderQuantity != null ){
             //Create Order
@@ -305,7 +304,6 @@ class EndPoints {
     //for handling missing fields in json input
     @Error
     fun handleBadRequest(request: HttpRequest<*>, e: ConversionErrorException): Any {
-        println(e)
         val errorMessages = arrayOf("Add missing fields to the request")
         val response = mapOf("error" to errorMessages)
         return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
