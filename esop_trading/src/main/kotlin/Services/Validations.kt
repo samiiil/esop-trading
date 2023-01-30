@@ -102,7 +102,7 @@ class Validations {
 
         fun validateEmailIds(emailId: String?): Collection<String> {
             val errorList = mutableSetOf<String>()
-            if(emailId.isNullOrBlank()){
+            if(emailId == null){
                 return errorList
             }
             if (DataStorage.registeredEmails.contains(emailId)) {
