@@ -131,30 +131,8 @@ class EndPoints {
 
         if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
             errorMessages.add("Invalid ESOP type")
-<<<<<<< Updated upstream
-        if (!Validations.validateUser(username)) {
-            errorMessages.add("username does not exists.")
-        }
-        if(quantityToBeAdded < 0  || quantityToBeAdded > DataStorage.MAX_QUANTITY){
-            errorMessages.add("Quantity is out of range. Quantity ranges 1 to ${DataStorage.MAX_QUANTITY} (both inclusive)")
-        }
-        else {
-            if (typeOfESOP == "NON-PERFORMANCE") {
-                val freeInventory = DataStorage.userList[username]!!.account.inventory.getFreeInventory()
-                val lockedInventory = DataStorage.userList[username]!!.account.inventory.getLockedInventory()
 
-                val totalQuantity = quantityToBeAdded + freeInventory + lockedInventory
-
-                if (totalQuantity <= 0 || totalQuantity > DataStorage.MAX_QUANTITY) {
-                    errorMessages.add("Invalid quantity entered")
-                }
-            } else if (typeOfESOP == "PERFORMANCE") {
-                val totalQuantity =
-                    quantityToBeAdded + DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory() + DataStorage.userList[username]!!.account.inventory.getLockedPerformanceInventory()
-                if (totalQuantity <= 0 || totalQuantity >= Util.MAX_AMOUNT) {
-                    errorMessages.add("Inventory quantity out of range. Inventory range 0 to ${DataStorage.MAX_QUANTITY}")
-=======
-        if (!Util.validateUser(username))
+        if (!Validations.validateUser(username))
             errorMessages.add("username does not exists.")
         if(quantityToBeAdded == null)
             errorMessages.add("Quantity field is missing")
@@ -180,7 +158,6 @@ class EndPoints {
                     if (totalQuantity <= 0 || totalQuantity >= Util.MAX_AMOUNT) {
                         errorMessages.add("Invalid quantity entered")
                     }
->>>>>>> Stashed changes
                 }
             }
         }
