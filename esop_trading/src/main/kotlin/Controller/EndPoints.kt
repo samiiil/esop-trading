@@ -11,7 +11,11 @@ import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
 import io.micronaut.http.hateoas.JsonError
 import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
+<<<<<<< Updated upstream
 import services.Validations
+=======
+import javax.xml.crypto.Data
+>>>>>>> Stashed changes
 
 @Controller("/")
 class EndPoints {
@@ -19,11 +23,11 @@ class EndPoints {
     fun register(@Body body: RegisterInput): HttpResponse<*> {
         val errorList = arrayListOf<String>()
 
-        if (errorList.isNotEmpty()) {
-            val response: Map<String, *>
-            response = mapOf("error" to errorList)
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
-        }
+//        if (errorList.isNotEmpty()) {
+//            val response: Map<String, *>
+//            response = mapOf("error" to errorList)
+//            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
+//        }
 
         if(body.firstName.isNullOrBlank()){
             errorList.add("firstName is missing")
@@ -81,12 +85,13 @@ class EndPoints {
         val errorMessages: ArrayList<String> = ArrayList<String>()
         //Input Parsing
 
-        val amountToBeAdded: Long? = body.amount?.toLong()
 
         val response: Map<String, *>
         if (!Validations.validateUser(username)) {
             errorMessages.add("Username does not exists.")
         }
+
+        val amountToBeAdded: Long? = body.amount?.toLong()
 
         if(amountToBeAdded == null){
             errorMessages.add("Amount field is missing")
@@ -98,11 +103,23 @@ class EndPoints {
         }
 
         if(amountToBeAdded != null){
-            if (amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() <= 0 || amountToBeAdded + DataStorage.userList[username]!!.account.wallet.getFreeMoney() + DataStorage.userList[username]!!.account.wallet.getLockedMoney() >= Util.MAX_AMOUNT) {
-                errorMessages.add("Invalid amount entered")
+            if(amountToBeAdded <= 0  || amountToBeAdded > DataStorage.MAX_AMOUNT){
+                errorMessages.add("Amount to be added is out of range. Amount range 1 to ${DataStorage.MAX_AMOUNT} (both inclusive)")
+            }
+            val freeMoney = DataStorage.userList[username]!!.account.wallet.getFreeMoney()
+            val lockedMoney = DataStorage.userList[username]!!.account.wallet.getLockedMoney()
+
+            if (((amountToBeAdded + freeMoney + lockedMoney) <= 0) ||
+                ((amountToBeAdded + freeMoney + lockedMoney) > DataStorage.MAX_AMOUNT)) {
+                errorMessages.add("Amount exceeds maximum wallet limit. Wallet range 0 to ${DataStorage.MAX_AMOUNT}")
+            }
+            if (errorMessages.isNotEmpty()) {
+                response = mapOf("error" to errorMessages)
+                return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
             }
             DataStorage.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
         }
+
         response = mapOf("message" to "$amountToBeAdded amount added to account")
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
@@ -120,18 +137,25 @@ class EndPoints {
             errorMessages.add("Invalid ESOP type")
         if (!Validations.validateUser(username)) {
             errorMessages.add("username does not exists.")
-        } else {
+        }
+        if(quantityToBeAdded < 0  || quantityToBeAdded > DataStorage.MAX_QUANTITY){
+            errorMessages.add("Quantity is out of range. Quantity ranges 1 to ${DataStorage.MAX_QUANTITY} (both inclusive)")
+        }
+        else {
             if (typeOfESOP == "NON-PERFORMANCE") {
-                val totalQuantity =
-                    quantityToBeAdded + DataStorage.userList[username]!!.account.inventory.getFreeInventory() + DataStorage.userList[username]!!.account.inventory.getLockedInventory()
-                if (totalQuantity <= 0 || totalQuantity >= Util.MAX_AMOUNT) {
+                val freeInventory = DataStorage.userList[username]!!.account.inventory.getFreeInventory()
+                val lockedInventory = DataStorage.userList[username]!!.account.inventory.getLockedInventory()
+
+                val totalQuantity = quantityToBeAdded + freeInventory + lockedInventory
+
+                if (totalQuantity <= 0 || totalQuantity > DataStorage.MAX_QUANTITY) {
                     errorMessages.add("Invalid quantity entered")
                 }
             } else if (typeOfESOP == "PERFORMANCE") {
                 val totalQuantity =
                     quantityToBeAdded + DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory() + DataStorage.userList[username]!!.account.inventory.getLockedPerformanceInventory()
                 if (totalQuantity <= 0 || totalQuantity >= Util.MAX_AMOUNT) {
-                    errorMessages.add("Invalid quantity entered")
+                    errorMessages.add("Inventory quantity out of range. Inventory range 0 to ${DataStorage.MAX_QUANTITY}")
                 }
             }
         }
