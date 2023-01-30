@@ -58,9 +58,9 @@ class User(
         return errorList
     }
 
-    fun getOrderDetails(): Map<String, *> {
+    fun getOrderDetails(): Map<String, ArrayList<Map<String,Any>>> {
         if (orders.size == 0) {
-            return mapOf("order_history" to "[]")
+            return mapOf("order_history" to ArrayList())
         }
 
         val orderDetails = ArrayList<Map<String, Any>>()

@@ -41,7 +41,7 @@ class Inventory {
 
     fun moveFreeInventoryToLockedInventory(esopsToBeLocked: Long): String {
         if (this.freeInventory < esopsToBeLocked) {
-            return "Insufficient ESOPs in Inventory."
+            return "Insufficient ESOPs in Inventory"
         }
         this.freeInventory = this.freeInventory - esopsToBeLocked
         this.lockedInventory = this.lockedInventory + esopsToBeLocked
@@ -50,7 +50,7 @@ class Inventory {
 
     fun moveFreePerformanceInventoryToLockedPerformanceInventory(esopsToBeLocked: Long): String {
         if (this.freePerformanceInventory < esopsToBeLocked) {
-            return "Insufficient ESOPs in Inventory."
+            return "Insufficient ESOPs in Inventory"
         }
         this.freePerformanceInventory = this.freePerformanceInventory - esopsToBeLocked
         this.lockedPerformanceInventory = this.lockedPerformanceInventory + esopsToBeLocked
