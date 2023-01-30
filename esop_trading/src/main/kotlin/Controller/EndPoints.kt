@@ -124,13 +124,14 @@ class EndPoints {
     fun addToInventory(username: String, @Body body: AddToInventoryInput): HttpResponse<*> {
 
         //Input Parsing
-        val quantityToBeAdded = body.quantity.toLong()
+        val quantityToBeAdded = body.quantity?.toLong()
         val typeOfESOP = body.esop_type?.uppercase() ?: "NON-PERFORMANCE"
         val errorMessages: ArrayList<String> = ArrayList()
         val response: Map<String, *>
 
         if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
             errorMessages.add("Invalid ESOP type")
+<<<<<<< Updated upstream
         if (!Validations.validateUser(username)) {
             errorMessages.add("username does not exists.")
         }
@@ -152,6 +153,34 @@ class EndPoints {
                     quantityToBeAdded + DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory() + DataStorage.userList[username]!!.account.inventory.getLockedPerformanceInventory()
                 if (totalQuantity <= 0 || totalQuantity >= Util.MAX_AMOUNT) {
                     errorMessages.add("Inventory quantity out of range. Inventory range 0 to ${DataStorage.MAX_QUANTITY}")
+=======
+        if (!Util.validateUser(username))
+            errorMessages.add("username does not exists.")
+        if(quantityToBeAdded == null)
+            errorMessages.add("Quantity field is missing")
+
+        else {
+            if (typeOfESOP == "NON-PERFORMANCE") {
+                val totalQuantity =
+                    (quantityToBeAdded.plus(DataStorage.userList[username]!!.account.inventory.getFreeInventory()) ?:null )?.plus(
+                        DataStorage.userList[username]!!.account.inventory.getLockedInventory()
+                    )
+                if (totalQuantity != null) {
+                    if (totalQuantity <= 0 || totalQuantity >= Util.MAX_AMOUNT) {
+                        errorMessages.add("Invalid quantity entered")
+                    }
+                }
+            } else if (typeOfESOP == "PERFORMANCE") {
+                val totalQuantity =
+                    (quantityToBeAdded.plus(DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory())
+                        ?:null )?.plus(
+                        DataStorage.userList[username]!!.account.inventory.getLockedPerformanceInventory()
+                    )
+                if (totalQuantity != null) {
+                    if (totalQuantity <= 0 || totalQuantity >= Util.MAX_AMOUNT) {
+                        errorMessages.add("Invalid quantity entered")
+                    }
+>>>>>>> Stashed changes
                 }
             }
         }
@@ -159,7 +188,9 @@ class EndPoints {
             response = mapOf("error" to errorMessages)
             return HttpResponse.badRequest(response)
         }
-        DataStorage.userList[username]!!.account.inventory.addEsopToInventory(quantityToBeAdded, typeOfESOP)
+        if (quantityToBeAdded != null) {
+            DataStorage.userList[username]!!.account.inventory.addEsopToInventory(quantityToBeAdded, typeOfESOP)
+        }
 
         response = mapOf("message" to "$quantityToBeAdded $typeOfESOP ESOPs added to account")
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
