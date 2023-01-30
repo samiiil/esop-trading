@@ -114,8 +114,7 @@ class Validations {
             if(emailId.contains(hyphens) || emailId.contains(dots)){
                 errorList.add("Invalid Email address")
             }
-            println(emailId)
-            if (!emailId.matches(Regex("^[a-zA-Z0-9.!#\$%&'*+/=?^_`{|}\"\" ~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*\$"))) {
+            if (!emailId.matches(Regex("^[\\\\a-zA-Z0-9.!#\$%&'*+/=?^_`{|}\" ~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)+\$"))) {
                 errorList.add("Invalid Email address")
             }
 
