@@ -99,9 +99,9 @@ class EndPoints {
         }
 
         if(amountToBeAdded != null){
-            if(amountToBeAdded <= 0  || amountToBeAdded > DataStorage.MAX_AMOUNT){
-                errorMessages.add("Amount to be added is out of range. Amount range 1 to ${DataStorage.MAX_AMOUNT} (both inclusive)")
-            }
+//            if(amountToBeAdded <= 0  || amountToBeAdded > DataStorage.MAX_AMOUNT){
+//                errorMessages.add("Amount to be added is out of range. Amount range 1 to ${DataStorage.MAX_AMOUNT} (both inclusive)")
+//            }
             val freeMoney = DataStorage.userList[username]!!.account.wallet.getFreeMoney()
             val lockedMoney = DataStorage.userList[username]!!.account.wallet.getLockedMoney()
 
@@ -164,6 +164,10 @@ class EndPoints {
                     errorMessages.add("ESOP inventory out of range. Limit for ESOP inventory is 0 to ${DataStorage.MAX_QUANTITY}")
                 }
 
+            }
+            if(errorMessages.isNotEmpty()){
+                response = mapOf("error" to errorMessages)
+                return HttpResponse.badRequest(response)
             }
             DataStorage.userList[username]!!.account.inventory.addEsopToInventory(quantityToBeAdded, typeOfESOP)
         }
