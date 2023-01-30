@@ -25,27 +25,27 @@ class EndPoints {
 //            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
 //        }
 
-        if(body.firstName.isNullOrBlank()){
+        if(body.firstName == null){
             errorList.add("firstName is missing")
         }
-        if(body.lastName.isNullOrBlank()){
+        if(body.lastName == null){
             errorList.add("lastName is missing")
         }
-        if(body.phoneNumber.isNullOrBlank()){
+        if(body.phoneNumber == null){
             errorList.add("phoneNumber is missing")
         }
-        if(body.email.isNullOrBlank()){
+        if(body.email == null){
             errorList.add("email is missing")
         }
-        if(body.username.isNullOrBlank()){
+        if(body.username == null){
             errorList.add("username is missing")
         }
 
-        val firstName: String? = body.firstName
-        val lastName: String? = body.lastName
-        val phoneNumber: String? = body.phoneNumber
-        val email: String? = body.email
-        val username: String? = body.username
+        val firstName: String? = body.firstName?.trim()
+        val lastName: String? = body.lastName?.trim()
+        val phoneNumber: String? = body.phoneNumber?.trim()
+        val email: String? = body.email?.trim()
+        val username: String? = body.username?.trim()
 
         for (error in Validations.validateFirstName(firstName)) errorList.add(error)
         for (error in Validations.validateLastName(lastName)) errorList.add(error)
@@ -64,7 +64,7 @@ class EndPoints {
         val response: Map<String, *>
         if (errorList.isNotEmpty()) {
             response = mapOf("error" to errorList)
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
+            return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
         val res = mutableMapOf<String, String>()
         res["firstName"] = firstName!!

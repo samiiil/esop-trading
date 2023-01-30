@@ -47,36 +47,37 @@ class Validations {
 
         fun validateFirstName(name: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
-            if(name.isNullOrBlank()){
+            if(name == null){
                 return errorList
             }
-            if (name.length < 3) {
-                errorList.add("First name has to be at least three characters.")
+
+            if (name!!.length < 3) {
+                errorList.add("firstName has to be at least three characters.")
+                return errorList
             }
-            if (!name.matches(Regex("([A-Za-z]+ ?)+"))) {
-                errorList.add("Invalid FirstName.")
+            if (!name.trim().matches(Regex("([A-Za-z]+ ?)+"))) {
+                errorList.add("Invalid firstName. firstName should only contain characters and cannot have more than one continuous space.")
             }
             return errorList
         }
 
         fun validateLastName(name: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
-            if(name.isNullOrBlank())
+            if(name == null)
                 return errorList
             if (name.isEmpty()) {
-                errorList.add("Last name has to be at least one characters.")
+                errorList.add("Last name has to be at least one character.")
             }
             if (!name.matches(Regex("([A-Za-z]+ ?)+"))) {
-                errorList.add("Invalid LastName.")
+                errorList.add("Invalid lastName. lastName should only contain characters and cannot have more than one continuous space.")
             }
-            for (i in errorList)
-                println(i)
+
             return errorList
         }
 
         fun validateUserName(username: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
-            if(username.isNullOrBlank()){
+            if(username == null){
                 return errorList
             }
             if (DataStorage.userList.contains(username)) {
@@ -144,35 +145,33 @@ class Validations {
 
         fun validatePhoneNumber(phoneNumber: String?, errorList: ArrayList<String>): ArrayList<String> {
             val errorList = arrayListOf<String>()
-            if(phoneNumber.isNullOrBlank()){
+            if(phoneNumber == null){
                 return errorList
             }
             if (DataStorage.registeredPhoneNumbers.contains(phoneNumber)) {
                 errorList.add("Phone number already exists")
             }
             if (phoneNumber.length < 10) {
-                errorList.add("Invalid phone number")
+                errorList.add("Invalid phone number. Accepted phoneNumber formats: 10 digits, +{two digit country code} 10 digits, {one/two digit country code} 10 digits")
             }
             if (phoneNumber.length == 13) {
                 if (!phoneNumber.substring(0, 3).matches(Regex("\\+?\\d\\d")) && phoneNumber.substring(3)
                         .matches(Regex("\\d*"))
                 )
-                    errorList.add("Invalid phone number")
+                    errorList.add("Invalid phone number. Accepted phoneNumber formats: 10 digits, +{two digit country code} 10 digits, {one/two digit country code} 10 digits")
             } else if (phoneNumber.length == 12) {
                 if (phoneNumber[0] == '+') {
                     if (!phoneNumber.substring(1).matches(Regex("\\d*"))) {
-                        errorList.add("Invalid Phone Number")
-                        println("right here")
+                        errorList.add("Invalid phone number. Accepted phoneNumber formats: 10 digits, +{two digit country code} 10 digits, {one/two digit country code} 10 digits")
                     }
                 } else {
                     if (!phoneNumber.matches(Regex("\\d*"))) {
-                        errorList.add("Invalid Phone Number")
-                        println("left here")
+                        errorList.add("Invalid phone number. Accepted phoneNumber formats: 10 digits, +{two digit country code} 10 digits, {one/two digit country code} 10 digits")
                     }
                 }
             } else if (phoneNumber.length == 11 || phoneNumber.length == 10) {
                 if (!phoneNumber.matches(Regex("\\d*"))) {
-                    errorList.add("Invalid Phone Number")
+                    errorList.add("Invalid phone number. Accepted phoneNumber formats: 10 digits, +{two digit country code} 10 digits, {one/two digit country code} 10 digits")
                 }
             }
             return errorList
