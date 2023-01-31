@@ -93,6 +93,10 @@ class EndPoints {
             errorMessages.add("Amount field is missing")
         }
 
+        if(amountToBeAdded!! <= 0 ){
+            errorMessages.add("Amount added to wallet cannot be negative.")
+        }
+
         if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
@@ -111,7 +115,7 @@ class EndPoints {
             }
             if (errorMessages.isNotEmpty()) {
                 response = mapOf("error" to errorMessages)
-                return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
+                return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
             }
             DataStorage.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
         }
