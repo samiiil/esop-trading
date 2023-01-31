@@ -105,10 +105,10 @@ class Validations {
             if(emailId == null){
                 return errorList
             }
+
             if (DataStorage.registeredEmails.contains(emailId)) {
                 errorList.add("Email already exists")
             }
-
             val hyphens: String = "--"
             val dots: String = ".."
             if(emailId.contains(hyphens) || emailId.contains(dots)){
@@ -116,6 +116,19 @@ class Validations {
             }
             if (!emailId.matches(Regex("^[\\\\a-zA-Z0-9.!#\$%&'*+/=?^_`{|}\" ~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)+\$"))) {
                 errorList.add("Invalid Email address")
+            }
+            else{
+                val splitedMail=emailId.split('@')
+                if(splitedMail[0].length>64){
+                    errorList.add("Local part of email must be less than 64 characters long, your local part is exceeded by ${splitedMail[0].length-64} characters")
+                }
+                if(splitedMail[1].length>255){
+                    errorList.add("Domain name must be less than 255 characters long, your domain name is exceeded by ${splitedMail[1].length-255}  characters")
+                }
+                val subdomain=splitedMail[1].split('.')
+                if(subdomain[1].length<=1){
+                    errorList.add("Subdomain should be more than 1 characters long ")
+                }
             }
 
             return errorList.toList()
