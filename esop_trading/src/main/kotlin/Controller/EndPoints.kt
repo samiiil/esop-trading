@@ -1,6 +1,5 @@
 package controller
 
-import models.*
 import com.fasterxml.jackson.core.JsonParseException
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest
@@ -10,7 +9,9 @@ import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
 import io.micronaut.http.hateoas.JsonError
 import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
+import models.*
 import services.Validations
+import services.saveUser
 
 @Controller("/")
 class EndPoints {
@@ -54,9 +55,8 @@ class EndPoints {
 
         if (errorList.isEmpty()) {
             if (username != null && firstName!= null && lastName!= null &&  phoneNumber!= null && email!= null) {
-
-                    User(username, firstName, lastName, phoneNumber, email)
-
+                val newUser = User(username, firstName, lastName, phoneNumber, email)
+                saveUser(newUser)
             }
         }
 
@@ -92,9 +92,15 @@ class EndPoints {
             errorMessages.add("Amount field is missing")
         }
 
+        if(amountToBeAdded!! <= 0 ){
+            errorMessages.add("Amount added to wallet has to be positive.")
+        }
+
         if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
+            if(errorMessages[0] == "Username does not exists.")
+                return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
+            return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
 
         if(amountToBeAdded != null){
@@ -110,7 +116,7 @@ class EndPoints {
             }
             if (errorMessages.isNotEmpty()) {
                 response = mapOf("error" to errorMessages)
-                return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
+                return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
             }
             DataStorage.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
         }
