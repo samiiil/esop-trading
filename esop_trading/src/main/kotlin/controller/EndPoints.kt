@@ -7,7 +7,6 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
-import io.micronaut.http.hateoas.JsonError
 import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
 import models.*
 import services.Validations
@@ -25,19 +24,19 @@ class EndPoints {
 //            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
 //        }
 
-        if(body.firstName == null){
+        if (body.firstName == null) {
             errorList.add("firstName is missing")
         }
-        if(body.lastName == null){
+        if (body.lastName == null) {
             errorList.add("lastName is missing")
         }
-        if(body.phoneNumber == null){
+        if (body.phoneNumber == null) {
             errorList.add("phoneNumber is missing")
         }
-        if(body.email == null){
+        if (body.email == null) {
             errorList.add("email is missing")
         }
-        if(body.username == null){
+        if (body.username == null) {
             errorList.add("username is missing")
         }
 
@@ -54,7 +53,7 @@ class EndPoints {
         for (error in Validations.validateUserName(username)) errorList.add(error)
 
         if (errorList.isEmpty()) {
-            if (username != null && firstName!= null && lastName!= null &&  phoneNumber!= null && email!= null) {
+            if (username != null && firstName != null && lastName != null && phoneNumber != null && email != null) {
                 val newUser = User(username, firstName, lastName, phoneNumber, email)
                 saveUser(newUser)
             }
@@ -77,7 +76,7 @@ class EndPoints {
 
     @Post("/user/{username}/addToWallet")
     fun addToWallet(username: String, @Body body: AddToWalletInput): HttpResponse<*> {
-        val errorMessages: ArrayList<String> = ArrayList<String>()
+        val errorMessages: ArrayList<String> = ArrayList()
         //Input Parsing
 
 
@@ -88,38 +87,34 @@ class EndPoints {
 
         val amountToBeAdded: Long? = body.amount?.toLong()
 
-        if(amountToBeAdded == null){
+        if (amountToBeAdded == null) {
             errorMessages.add("Amount field is missing")
         }
 
-        if(amountToBeAdded!! <= 0 ){
+        if (amountToBeAdded!! <= 0) {
             errorMessages.add("Amount added to wallet has to be positive.")
         }
 
         if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
-            if(errorMessages[0] == "Username does not exists.")
+            if (errorMessages[0] == "Username does not exists.")
                 return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
             return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
 
-        if(amountToBeAdded != null){
-//            if(amountToBeAdded <= 0  || amountToBeAdded > DataStorage.MAX_AMOUNT){
-//                errorMessages.add("Amount to be added is out of range. Amount range 1 to ${DataStorage.MAX_AMOUNT} (both inclusive)")
-//            }
-            val freeMoney = DataStorage.userList[username]!!.account.wallet.getFreeMoney()
-            val lockedMoney = DataStorage.userList[username]!!.account.wallet.getLockedMoney()
+        val freeMoney = DataStorage.userList[username]!!.account.wallet.getFreeMoney()
+        val lockedMoney = DataStorage.userList[username]!!.account.wallet.getLockedMoney()
 
-            if (((amountToBeAdded + freeMoney + lockedMoney) <= 0) ||
-                ((amountToBeAdded + freeMoney + lockedMoney) > DataStorage.MAX_AMOUNT)) {
-                errorMessages.add("Amount exceeds maximum wallet limit. Wallet range 0 to ${DataStorage.MAX_AMOUNT}")
-            }
-            if (errorMessages.isNotEmpty()) {
-                response = mapOf("error" to errorMessages)
-                return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
-            }
-            DataStorage.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
+        if (((amountToBeAdded + freeMoney + lockedMoney) <= 0) ||
+            ((amountToBeAdded + freeMoney + lockedMoney) > DataStorage.MAX_AMOUNT)
+        ) {
+            errorMessages.add("Amount exceeds maximum wallet limit. Wallet range 0 to ${DataStorage.MAX_AMOUNT}")
         }
+        if (errorMessages.isNotEmpty()) {
+            response = mapOf("error" to errorMessages)
+            return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
+        }
+        DataStorage.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
 
         response = mapOf("message" to "$amountToBeAdded amount added to account")
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
@@ -139,16 +134,14 @@ class EndPoints {
 
         if (!Validations.validateUser(username))
             errorMessages.add("username does not exists.")
-        if(quantityToBeAdded == null) {
+        if (quantityToBeAdded == null) {
             errorMessages.add("Quantity field is missing")
 
         }
-        if(errorMessages.isNotEmpty()){
+        if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.OK).body(response)
-        }
-
-        else if(quantityToBeAdded != null) {
+        } else if (quantityToBeAdded != null) {
             if (typeOfESOP == "NON-PERFORMANCE") {
                 val freeInventory = DataStorage.userList[username]!!.account.inventory.getFreeInventory()
                 val lockedInventory = DataStorage.userList[username]!!.account.inventory.getLockedInventory()
@@ -160,8 +153,10 @@ class EndPoints {
                 }
 
             } else if (typeOfESOP == "PERFORMANCE") {
-                val freePerformanceInventory = DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory()
-                val lockedPerformanceInventory = DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory()
+                val freePerformanceInventory =
+                    DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory()
+                val lockedPerformanceInventory =
+                    DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory()
                 val totalQuantity = freePerformanceInventory + lockedPerformanceInventory + quantityToBeAdded
 
 
@@ -170,7 +165,7 @@ class EndPoints {
                 }
 
             }
-            if(errorMessages.isNotEmpty()){
+            if (errorMessages.isNotEmpty()) {
                 response = mapOf("error" to errorMessages)
                 return HttpResponse.badRequest(response)
             }
@@ -230,16 +225,16 @@ class EndPoints {
 
         if (!Validations.validateUser(username))
             errorMessages.add("username does not exists.")
-        if(body.order_type.isNullOrBlank())
+        if (body.order_type.isNullOrBlank())
             errorMessages.add("order_type is missing, order type should be BUY or SELL")
-        if(body.price == null)
+        if (body.price == null)
             errorMessages.add("price for the order is missing")
-        if(body.quantity == null)
+        if (body.quantity == null)
             errorMessages.add("quantity field for order is missing")
-        if(body.order_type != null && body.order_type == "SELL" && body.esop_type.isNullOrBlank()){
+        if (body.order_type != null && body.order_type == "SELL" && body.esop_type.isNullOrBlank()) {
             errorMessages.add("esop_type is missing, SELL order requires esop_type")
         }
-        if(errorMessages.isNotEmpty()){
+        if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
@@ -255,12 +250,12 @@ class EndPoints {
         if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
             errorMessages.add("Invalid type of ESOP, ESOP type should be PERFORMANCE or NON-PERFORMANCE")
 
-        if(errorMessages.isEmpty() && orderPrice != null && orderType != null && orderQuantity != null ){
+        if (errorMessages.isEmpty() && orderPrice != null && orderType != null && orderQuantity != null) {
             //Create Order
             val result = DataStorage.userList[username]!!.addOrder(orderQuantity, orderType, orderPrice, typeOfESOP)
             if (result.isNotEmpty())
                 errorMessages.addAll(result)
-            else{
+            else {
                 val res = mutableMapOf<String, Any>()
                 res["quantity"] = orderQuantity
                 res["order_type"] = orderType
@@ -305,8 +300,7 @@ class EndPoints {
     fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
         //handles errors in json syntax
         val errorMap = mutableMapOf<String, ArrayList<String>>()
-        val error = JsonError("Invalid JSON: ${e.message}")
-        errorMap["error"] = arrayListOf<String>("Invalid JSON: ${e.message}")
+        errorMap["error"] = arrayListOf("Invalid JSON: ${e.message}")
         return HttpResponse.badRequest(errorMap)
     }
 
@@ -319,7 +313,15 @@ class EndPoints {
     }
 
     @Error(exception = UnsatisfiedBodyRouteException::class)
-    fun handleEmptyBody(request: HttpRequest<*>, e: UnsatisfiedBodyRouteException): HttpResponse<Map<String, Array<String>>>{
+    fun handleEmptyBody(
+        request: HttpRequest<*>,
+        e: UnsatisfiedBodyRouteException
+    ): HttpResponse<Map<String, Array<String>>> {
         return HttpResponse.badRequest(mapOf("error" to arrayOf("Request body is missing")))
+    }
+
+    @Error(global = true, status = HttpStatus.NOT_FOUND)
+    fun handleInvalidRoute(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
+        return HttpResponse.notFound(ErrorResponse(arrayListOf("Invalid URI - ${request.uri}")))
     }
 }
