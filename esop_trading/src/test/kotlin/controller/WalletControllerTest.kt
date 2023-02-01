@@ -56,13 +56,14 @@ class WalletControllerTest {
 
     @Test
     fun shouldNotBeAbleToAddNegativeAmount() {
-        val request: HttpRequest<Any> = HttpRequest.POST( walletURI, AddToWalletInput(-10))
+        val request: HttpRequest<Any> = HttpRequest.POST(walletURI, AddToWalletInput(-10))
         val exception = assertThrows(HttpClientResponseException::class.java) {
             client.toBlocking().retrieve(request)
         }
-        assertEquals(HttpStatus.UNAUTHORIZED, exception.status)
-        val errorResponse: ErrorResponse = mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
-        assertEquals("Amount added to wallet cannot be negative.", errorResponse.error[0])
+        assertEquals(HttpStatus.BAD_REQUEST, exception.status)
+        val errorResponse: ErrorResponse =
+            mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
+        assertEquals("Amount added to wallet has to be positive.", errorResponse.error[0])
     }
 
     @Test
@@ -71,7 +72,7 @@ class WalletControllerTest {
 
         val request: HttpRequest<Any> = HttpRequest.POST(walletURI, AddToWalletInput(amountToBeAdded))
         val res = client.toBlocking().retrieve(request)
-        val response : WalletResponse = mapper.readValue(res, WalletResponse::class.java)
+        val response: WalletResponse = mapper.readValue(res, WalletResponse::class.java)
 
         //assertEquals()
         assertEquals("$amountToBeAdded amount added to account", response.message)
@@ -87,7 +88,8 @@ class WalletControllerTest {
             client.toBlocking().retrieve(request)
         }
 
-        val response: ErrorResponse = mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
+        val response: ErrorResponse =
+            mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
 
         assertEquals(HttpStatus.UNAUTHORIZED, exception.status)
         assertEquals("Username does not exists.", response.error[0])
@@ -104,10 +106,30 @@ class WalletControllerTest {
             client.toBlocking().retrieve(request)
         }
 
-        val response: ErrorResponse = mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
+        val response: ErrorResponse =
+            mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.status)
-        assertEquals("Amount exceeds maximum wallet limit. Wallet range 0 to ${DataStorage.MAX_AMOUNT}", response.error[0])
+        assertEquals(
+            "Amount exceeds maximum wallet limit. Wallet range 0 to ${DataStorage.MAX_AMOUNT}",
+            response.error[0]
+        )
+    }
 
+    @Test
+    fun shouldGiveBothErrorsWhenInvalidUserGivesInvalidInput() {
+        val amountToBeAdded = -10
+        val request: HttpRequest<Any> = HttpRequest.POST("/user/user2/addToWallet", AddToWalletInput(amountToBeAdded))
+
+        val exception = assertThrows(HttpClientResponseException::class.java) {
+            client.toBlocking().retrieve(request)
+        }
+
+        val response: ErrorResponse =
+            mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
+
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.status)
+        assertEquals("Username does not exists.", response.error[0])
+        assertEquals("Amount added to wallet has to be positive.", response.error[1])
     }
 }

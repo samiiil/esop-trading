@@ -94,12 +94,14 @@ class EndPoints {
         }
 
         if(amountToBeAdded!! <= 0 ){
-            errorMessages.add("Amount added to wallet cannot be negative.")
+            errorMessages.add("Amount added to wallet has to be positive.")
         }
 
         if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
-            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
+            if(errorMessages[0] == "Username does not exists.")
+                return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
+            return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
 
         if(amountToBeAdded != null){
