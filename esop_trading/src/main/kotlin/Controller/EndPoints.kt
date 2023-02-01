@@ -49,7 +49,7 @@ class EndPoints {
 
         for (error in Validations.validateFirstName(firstName)) errorList.add(error)
         for (error in Validations.validateLastName(lastName)) errorList.add(error)
-        for (error in Validations.validatePhoneNumber(phoneNumber, errorList)) errorList.add(error)
+        for (error in Validations.validatePhoneNumber(phoneNumber)) errorList.add(error)
         for (error in Validations.validateEmailIds(email)) errorList.add(error)
         for (error in Validations.validateUserName(username)) errorList.add(error)
 
