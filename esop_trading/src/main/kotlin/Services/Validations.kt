@@ -112,9 +112,8 @@ class Validations {
             if(emailId.elementAt(0)=='.' || emailId.elementAt(0)=='-' || emailId.elementAt(emailId.length-1)=='.' || emailId.elementAt(emailId.length-1)=='-'){
                 errorList.add("Invalid Email address")
             }
-            val hyphens: String = "--"
             val dots: String = ".."
-            if(emailId.contains(hyphens) || emailId.contains(dots)){
+            if( emailId.contains(dots)){
                 errorList.add("Invalid Email address")
             }
             if (!emailId.matches(Regex("^[\\\\a-zA-Z0-9.!#\$%&'*+/=?^_`{|}\" ~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)+\$"))) {
@@ -122,6 +121,8 @@ class Validations {
             }
             else{
                 val splitMail=emailId.split('@')
+                val domain = splitMail[1]
+                validateDomain(domain)
                 if(splitMail[0].elementAt(splitMail[0].length-1)=='.'){
                     errorList.add("Invalid Email address")
                 }
@@ -175,6 +176,19 @@ class Validations {
                 }
             }
             return errorList
+        }
+
+        fun validateDomain(domain: String):Boolean{
+            val labels = domain.split('.')
+            return labels.all{
+                validateLabel(it)
+            }
+        }
+
+        fun validateLabel(label: String):Boolean {
+            val ldhStrRegex ="[a-zA-Z0-9-]+"
+            val labelRegex = "[a-zA-Z]$ldhStrRegex[a-zA-Z0-9]"
+            return label.matches(Regex(labelRegex))
         }
     }
 }
