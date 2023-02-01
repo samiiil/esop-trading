@@ -109,6 +109,9 @@ class Validations {
             if (DataStorage.registeredEmails.contains(emailId)) {
                 errorList.add("Email already exists")
             }
+            if(emailId.elementAt(0)=='.' || emailId.elementAt(0)=='-'){
+                errorList.add("Invalid Email address")
+            }
             val hyphens: String = "--"
             val dots: String = ".."
             if(emailId.contains(hyphens) || emailId.contains(dots)){
@@ -119,6 +122,9 @@ class Validations {
             }
             else{
                 val splitedMail=emailId.split('@')
+                if(splitedMail[0].elementAt(splitedMail[0].length-1)=='.'){
+                    errorList.add("Invalid Email address")
+                }
                 if(splitedMail[0].length>64){
                     errorList.add("Local part of email must be less than 64 characters long, your local part is exceeded by ${splitedMail[0].length-64} characters")
                 }
