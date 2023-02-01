@@ -121,20 +121,20 @@ class Validations {
                 errorList.add("Invalid Email address")
             }
             else{
-                val splitedMail=emailId.split('@')
-                if(splitedMail[0].elementAt(splitedMail[0].length-1)=='.'){
+                val splitMail=emailId.split('@')
+                if(splitMail[0].elementAt(splitMail[0].length-1)=='.'){
                     errorList.add("Invalid Email address")
                 }
-                if(splitedMail[1].elementAt(0)=='-'){
+                if(splitMail[1].elementAt(0)=='-'){
                     errorList.add("Invalid Email address")
                 }
-                if(splitedMail[0].length>64){
-                    errorList.add("Local part of email must be less than 64 characters long, your local part is exceeded by ${splitedMail[0].length-64} characters")
+                if(splitMail[0].length>64){
+                    errorList.add("Local part of email must be less than 64 characters long, your local part is exceeded by ${splitMail[0].length-64} characters")
                 }
-                if(splitedMail[1].length>255){
-                    errorList.add("Domain name must be less than 255 characters long, your domain name is exceeded by ${splitedMail[1].length-255}  characters")
+                if(splitMail[1].length>255){
+                    errorList.add("Domain name must be less than 255 characters long, your domain name is exceeded by ${splitMail[1].length-255}  characters")
                 }
-                val subdomain=splitedMail[1].split('.')
+                val subdomain=splitMail[1].split('.')
                 if(subdomain[1].length<=1){
                     errorList.add("Subdomain should be more than 1 characters long ")
                 }

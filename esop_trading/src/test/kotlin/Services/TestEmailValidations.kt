@@ -1,7 +1,6 @@
-package Services
+package services
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
-import services.Validations
 
 class TestEmailValidations {
     @Test
@@ -13,7 +12,7 @@ class TestEmailValidations {
     }
 
     @Test
-    fun `should not accept only characters in local part`(){
+    fun `should have atleast one character in username part `(){
         //Act
         val errorList=Validations.validateEmailIds("@#@@##@%^%#\$@#\$@#.com\n")
         //Assert
@@ -21,7 +20,7 @@ class TestEmailValidations {
     }
 
     @Test
-    fun `should not accept mail without local part`(){
+    fun `should not accept mail without username`(){
         //Act
         val errorList=Validations.validateEmailIds("@email.com")
         //Assert
@@ -45,7 +44,7 @@ class TestEmailValidations {
     }
 
     @Test
-    fun `should not accept mail with @ in local part`(){
+    fun `should not accept mail with @ in username`(){
         //Act
         val errorList=Validations.validateEmailIds("example@example@email.com")
         //Assert
@@ -100,7 +99,7 @@ class TestEmailValidations {
     }
 
     @Test
-    fun `should not accept mail with hyphens in domain`(){
+    fun `should not start with hyphens`(){
         //Act
         val errorList=Validations.validateEmailIds("example@-email.com")
         //Assert
