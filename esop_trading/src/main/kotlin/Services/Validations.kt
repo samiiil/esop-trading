@@ -109,7 +109,7 @@ class Validations {
             if (DataStorage.registeredEmails.contains(emailId)) {
                 errorList.add("Email already exists")
             }
-            if(emailId.elementAt(0)=='.' || emailId.elementAt(0)=='-'){
+            if(emailId.elementAt(0)=='.' || emailId.elementAt(0)=='-' || emailId.elementAt(emailId.length-1)=='.' || emailId.elementAt(emailId.length-1)=='-'){
                 errorList.add("Invalid Email address")
             }
             val hyphens: String = "--"
@@ -123,6 +123,9 @@ class Validations {
             else{
                 val splitedMail=emailId.split('@')
                 if(splitedMail[0].elementAt(splitedMail[0].length-1)=='.'){
+                    errorList.add("Invalid Email address")
+                }
+                if(splitedMail[1].elementAt(0)=='-'){
                     errorList.add("Invalid Email address")
                 }
                 if(splitedMail[0].length>64){
