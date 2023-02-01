@@ -281,4 +281,39 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.OK)
             .body(mapOf(Pair("TotalFees", DataStorage.TOTAL_FEE_COLLECTED)))
     }
+
+    @Error
+    fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
+        //handles errors in json syntax
+        val errorMap = mutableMapOf<String, ArrayList<String>>()
+        val error = JsonError("Invalid JSON: ${e.message}")
+        errorMap["error"] = arrayListOf<String>("Invalid JSON: ${e.message}")
+        return HttpResponse.badRequest(errorMap)
+    }
+
+    //for handling missing fields in json input
+    @Error
+    fun handleConversionError(request: HttpRequest<*>, e: ConversionErrorException): Any {
+        val errorMessages = arrayOf("Add missing fields to the request")
+        val response = mapOf("error" to errorMessages)
+        return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
+    }
+
+    @Error(exception = UnsatisfiedBodyRouteException::class)
+    fun handleEmptyBody(
+        request: HttpRequest<*>
+    ): HttpResponse<Map<String, Array<String>>> {
+        return HttpResponse.badRequest(mapOf("error" to arrayOf("Request body is missing")))
+    }
+
+    @Error(global = true, status = HttpStatus.NOT_FOUND)
+    fun handleInvalidRoute(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
+        return HttpResponse.notFound(ErrorResponse(arrayListOf("Invalid URI - ${request.uri}")))
+    }
+
+    @Error(global = true, status = HttpStatus.METHOD_NOT_ALLOWED)
+    fun handleWrongHttpMethod(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
+        val response = ErrorResponse(arrayListOf("${request.method} method is not allowed for ${request.uri}."))
+        return HttpResponse.notAllowed<ErrorResponse>().body(response)
+    }
 }
