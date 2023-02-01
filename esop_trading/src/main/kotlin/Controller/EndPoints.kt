@@ -1,7 +1,5 @@
 package controller
 
-import models.RegisterResponse
-import models.*
 import com.fasterxml.jackson.core.JsonParseException
 import exception.BadRequestException
 import io.micronaut.core.convert.exceptions.ConversionErrorException
@@ -12,6 +10,7 @@ import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
 import io.micronaut.http.hateoas.JsonError
 import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
+import models.*
 import services.Validations
 
 @Controller("/")
