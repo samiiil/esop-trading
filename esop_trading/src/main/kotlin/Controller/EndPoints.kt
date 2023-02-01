@@ -1,7 +1,5 @@
 package controller
 
-import models.*
-import services.Util
 import com.fasterxml.jackson.core.JsonParseException
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest
@@ -11,7 +9,9 @@ import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
 import io.micronaut.http.hateoas.JsonError
 import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
+import models.*
 import services.Validations
+import services.saveUser
 
 @Controller("/")
 class EndPoints {
@@ -55,9 +55,8 @@ class EndPoints {
 
         if (errorList.isEmpty()) {
             if (username != null && firstName!= null && lastName!= null &&  phoneNumber!= null && email!= null) {
-
-                    User(username, firstName, lastName, phoneNumber, email)
-
+                val newUser = User(username, firstName, lastName, phoneNumber, email)
+                saveUser(newUser)
             }
         }
 
