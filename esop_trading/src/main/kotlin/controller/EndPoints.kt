@@ -302,7 +302,7 @@ class EndPoints {
 
     //for handling missing fields in json input
     @Error
-    fun handleBadRequest(request: HttpRequest<*>, e: ConversionErrorException): Any {
+    fun handleConversionError(request: HttpRequest<*>, e: ConversionErrorException): Any {
         val errorMessages = arrayOf("Add missing fields to the request")
         val response = mapOf("error" to errorMessages)
         return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
@@ -310,8 +310,7 @@ class EndPoints {
 
     @Error(exception = UnsatisfiedBodyRouteException::class)
     fun handleEmptyBody(
-        request: HttpRequest<*>,
-        e: UnsatisfiedBodyRouteException
+        request: HttpRequest<*>
     ): HttpResponse<Map<String, Array<String>>> {
         return HttpResponse.badRequest(mapOf("error" to arrayOf("Request body is missing")))
     }
@@ -319,5 +318,11 @@ class EndPoints {
     @Error(global = true, status = HttpStatus.NOT_FOUND)
     fun handleInvalidRoute(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
         return HttpResponse.notFound(ErrorResponse(arrayListOf("Invalid URI - ${request.uri}")))
+    }
+
+    @Error(global = true, status = HttpStatus.METHOD_NOT_ALLOWED)
+    fun handleWrongHttpMethod(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
+        val response = ErrorResponse(arrayListOf("${request.method} method is not allowed for ${request.uri}."))
+        return HttpResponse.notAllowed<ErrorResponse>().body(response)
     }
 }
