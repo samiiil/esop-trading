@@ -23,13 +23,9 @@ class TestErrorHandling {
     lateinit var client: HttpClient
 
     private val mapper = ObjectMapper().registerModule(
-        KotlinModule.Builder()
-            .withReflectionCacheSize(512).configure(KotlinFeature.NullToEmptyCollection, false)
-            .configure(KotlinFeature.NullToEmptyMap, false)
-            .configure(KotlinFeature.NullIsSameAsDefault, false)
-            .configure(KotlinFeature.SingletonSupport, false)
-            .configure(KotlinFeature.StrictNullChecks, false)
-            .build()
+        KotlinModule.Builder().withReflectionCacheSize(512).configure(KotlinFeature.NullToEmptyCollection, false)
+            .configure(KotlinFeature.NullToEmptyMap, false).configure(KotlinFeature.NullIsSameAsDefault, false)
+            .configure(KotlinFeature.SingletonSupport, false).configure(KotlinFeature.StrictNullChecks, false).build()
     )
 
     @Test
@@ -40,11 +36,27 @@ class TestErrorHandling {
         val exception = assertThrows(HttpClientResponseException::class.java) {
             client.toBlocking().retrieve(request)
         }
-
         val response = mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
 
         assertEquals(HttpStatus.NOT_FOUND, exception.status)
         assertEquals("Invalid URI - $uri", response.error[0])
+        assertEquals(1, response.error.size)
+    }
+
+    @Test
+    fun `should send Http 405 when using get method for user registration`() {
+        val uri = "/user/register"
+        val request = HttpRequest.GET<Any>(uri)
+
+        val exception = assertThrows(HttpClientResponseException::class.java) {
+            client.toBlocking().retrieve(request)
+        }
+        val response = mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
+
+        println(exception.response.body())
+        println(exception.status)
+        assertEquals(HttpStatus.METHOD_NOT_ALLOWED, exception.status)
+        assertEquals("GET method is not allowed for $uri.", response.error[0])
         assertEquals(1, response.error.size)
     }
 }
