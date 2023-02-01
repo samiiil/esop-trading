@@ -4,7 +4,7 @@ import io.micronaut.json.tree.JsonObject
 import models.DataStorage
 
 class Validations {
-    companion object{
+    companion object {
         fun validateBody(body: JsonObject): ArrayList<String> {
             val errorList = arrayListOf<String>()
 
@@ -47,11 +47,11 @@ class Validations {
 
         fun validateFirstName(name: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
-            if(name == null){
+            if (name == null) {
                 return errorList
             }
 
-            if (name!!.length < 3) {
+            if (name.length < 3) {
                 errorList.add("firstName has to be at least three characters.")
                 return errorList
             }
@@ -63,7 +63,7 @@ class Validations {
 
         fun validateLastName(name: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
-            if(name == null)
+            if (name == null)
                 return errorList
             if (name.isEmpty()) {
                 errorList.add("Last name has to be at least one character.")
@@ -77,7 +77,7 @@ class Validations {
 
         fun validateUserName(username: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
-            if(username == null){
+            if (username == null) {
                 return errorList
             }
             if (DataStorage.userList.contains(username)) {
@@ -102,48 +102,47 @@ class Validations {
 
         fun validateEmailIds(emailId: String?): Collection<String> {
             val errorList = mutableSetOf<String>()
-            if(emailId == null){
+            if (emailId == null) {
                 return errorList
             }
 
             if (DataStorage.registeredEmails.contains(emailId)) {
                 errorList.add("Email already exists")
             }
-            if(emailId.elementAt(0)=='.' || emailId.elementAt(0)=='-' || emailId.elementAt(emailId.length-1)=='.' || emailId.elementAt(emailId.length-1)=='-'){
+            if (emailId.first() == '.' || emailId.first() == '-' || emailId.last() == '.' || emailId.last() == '-') {
                 errorList.add("Invalid Email address")
             }
-            val hyphen: String="--"
-            val dots: String = ".."
-            if( emailId.contains(dots)){
+            val hyphen = "--"
+            val dots = ".."
+            if (emailId.contains(dots)) {
                 errorList.add("Invalid Email address")
             }
             if (!emailId.matches(Regex("^[\\\\a-zA-Z0-9.!#\$%&'*+/=?^_`{|}\" ~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)+\$"))) {
                 errorList.add("Invalid Email address")
-            }
-            else{
-                val splitMail=emailId.split('@')
-                val username=splitMail[0]
+            } else {
+                val splitMail = emailId.split('@')
+                val username = splitMail[0]
                 val domain = splitMail[1]
-                if(!validDomain(domain)){
+                if (!validDomain(domain)) {
                     errorList.add("Invalid Email address")
                 }
-                if(username.contains(hyphen)){
-                    errorList.add("Invaild Email address")
+                if (username.contains(hyphen)) {
+                    errorList.add("Invalid Email address")
                 }
-                if(emailId.length>255){
+                if (emailId.length > 255) {
                     errorList.add("Email must be less than 255 characters")
                 }
-                if(splitMail[0].elementAt(splitMail[0].length-1)=='.'){
+                if (splitMail[0].last() == '.') {
                     errorList.add("Invalid Email address")
                 }
-                if(splitMail[0].length>64){
+                if (splitMail[0].length > 64) {
                     errorList.add("User name of email must be less than 64 characters long")
                 }
-                if(splitMail[1].length>255){
+                if (splitMail[1].length > 255) {
                     errorList.add("Domain name must be less than 255 characters long")
                 }
-                val subdomain=splitMail[1].split('.')
-                if(subdomain[1].length<=1){
+                val subdomain = splitMail[1].split('.')
+                if (subdomain[1].length <= 1) {
                     errorList.add("Subdomain should be more than 1 characters long ")
                 }
             }
@@ -151,9 +150,9 @@ class Validations {
             return errorList.toList()
         }
 
-        fun validatePhoneNumber(phoneNumber: String?, errorList: ArrayList<String>): ArrayList<String> {
+        fun validatePhoneNumber(phoneNumber: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
-            if(phoneNumber == null){
+            if (phoneNumber == null) {
                 return errorList
             }
             if (DataStorage.registeredPhoneNumbers.contains(phoneNumber)) {
@@ -185,15 +184,15 @@ class Validations {
             return errorList
         }
 
-        fun validDomain(domain: String):Boolean{
+        private fun validDomain(domain: String): Boolean {
             val labels = domain.split('.')
-            return labels.all{
+            return labels.all {
                 validLabel(it)
             }
         }
 
-        fun validLabel(label: String):Boolean {
-            val ldhStrRegex ="[a-zA-Z0-9-]+"
+        private fun validLabel(label: String): Boolean {
+            val ldhStrRegex = "[a-zA-Z0-9-]+"
             val labelRegex = "[a-zA-Z]$ldhStrRegex[a-zA-Z0-9]"
             return label.matches(Regex(labelRegex))
         }
