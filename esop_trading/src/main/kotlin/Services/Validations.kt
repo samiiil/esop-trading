@@ -112,6 +112,7 @@ class Validations {
             if(emailId.elementAt(0)=='.' || emailId.elementAt(0)=='-' || emailId.elementAt(emailId.length-1)=='.' || emailId.elementAt(emailId.length-1)=='-'){
                 errorList.add("Invalid Email address")
             }
+            val hyphen: String="--"
             val dots: String = ".."
             if( emailId.contains(dots)){
                 errorList.add("Invalid Email address")
@@ -121,9 +122,13 @@ class Validations {
             }
             else{
                 val splitMail=emailId.split('@')
+                val username=splitMail[0]
                 val domain = splitMail[1]
                 if(!validDomain(domain)){
                     errorList.add("Invalid Email address")
+                }
+                if(username.contains(hyphen)){
+                    errorList.add("Invaild Email address")
                 }
                 if(emailId.length>255){
                     errorList.add("Email must be less than 255 characters")
