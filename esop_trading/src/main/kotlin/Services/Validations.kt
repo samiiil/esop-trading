@@ -122,7 +122,9 @@ class Validations {
             else{
                 val splitMail=emailId.split('@')
                 val domain = splitMail[1]
-                validateDomain(domain)
+                if(!validDomain(domain)){
+                    errorList.add("Invalid Email address")
+                }
                 if(splitMail[0].elementAt(splitMail[0].length-1)=='.'){
                     errorList.add("Invalid Email address")
                 }
@@ -178,14 +180,14 @@ class Validations {
             return errorList
         }
 
-        fun validateDomain(domain: String):Boolean{
+        fun validDomain(domain: String):Boolean{
             val labels = domain.split('.')
             return labels.all{
-                validateLabel(it)
+                validLabel(it)
             }
         }
 
-        fun validateLabel(label: String):Boolean {
+        fun validLabel(label: String):Boolean {
             val ldhStrRegex ="[a-zA-Z0-9-]+"
             val labelRegex = "[a-zA-Z]$ldhStrRegex[a-zA-Z0-9]"
             return label.matches(Regex(labelRegex))
