@@ -1,8 +1,9 @@
 package controller
 
+import models.RegisterResponse
 import models.*
-import services.Util
 import com.fasterxml.jackson.core.JsonParseException
+import exception.BadRequestException
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -16,7 +17,7 @@ import services.Validations
 @Controller("/")
 class EndPoints {
     @Post("/user/register")
-    fun register(@Body body: RegisterInput): HttpResponse<*> {
+    fun register(@Body body: RegisterInput): HttpResponse<RegisterResponse> {
         val errorList = arrayListOf<String>()
 
 //        if (errorList.isNotEmpty()) {
@@ -25,58 +26,59 @@ class EndPoints {
 //            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
 //        }
 
-        if(body.firstName == null){
-            errorList.add("firstName is missing")
+        if (body.firstName == null) {
+            errorList.add("firstName is missing.")
         }
-        if(body.lastName == null){
-            errorList.add("lastName is missing")
+        if (body.lastName == null) {
+            errorList.add("lastName is missing.")
         }
-        if(body.phoneNumber == null){
-            errorList.add("phoneNumber is missing")
+        if (body.phoneNumber == null) {
+            errorList.add("phoneNumber is missing.")
         }
-        if(body.email == null){
-            errorList.add("email is missing")
+        if (body.emailID == null) {
+            errorList.add("email is missing.")
         }
-        if(body.username == null){
-            errorList.add("username is missing")
+        if (body.userName == null) {
+            errorList.add("userName is missing.")
         }
 
         val firstName: String? = body.firstName?.trim()
         val lastName: String? = body.lastName?.trim()
         val phoneNumber: String? = body.phoneNumber?.trim()
-        val email: String? = body.email?.trim()
-        val username: String? = body.username?.trim()
+        val emailID: String? = body.emailID?.trim()
+        val userName: String? = body.userName?.trim()
 
         for (error in Validations.validateFirstName(firstName)) errorList.add(error)
         for (error in Validations.validateLastName(lastName)) errorList.add(error)
         for (error in Validations.validatePhoneNumber(phoneNumber, errorList)) errorList.add(error)
-        for (error in Validations.validateEmailIds(email)) errorList.add(error)
-        for (error in Validations.validateUserName(username)) errorList.add(error)
+        for (error in Validations.validateEmailIds(emailID)) errorList.add(error)
+        for (error in Validations.validateUserName(userName)) errorList.add(error)
 
         if (errorList.isEmpty()) {
-            if (username != null && firstName!= null && lastName!= null &&  phoneNumber!= null && email!= null) {
+            if (userName != null && firstName != null && lastName != null && phoneNumber != null && emailID != null) {
 
-                    User(username, firstName, lastName, phoneNumber, email)
+                User(userName, firstName, lastName, phoneNumber, emailID)
 
             }
         }
-
         val response: Map<String, *>
         if (errorList.isNotEmpty()) {
-            response = mapOf("error" to errorList)
-            return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
+            val errorResponse = ErrorResponse(errorList)
+//            return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
+            throw BadRequestException(errorResponse)
         }
-        val res = mutableMapOf<String, String>()
-        res["firstName"] = firstName!!
-        res["lastName"] = lastName!!
-        res["phoneNumber"] = phoneNumber!!
-        res["email"] = email!!
-        res["username"] = username!!
+        val res = RegisterResponse(
+            firstName = firstName,
+            lastName = lastName,
+            phoneNumber = phoneNumber,
+            emailID = emailID,
+            userName = userName
+        )
         // response = mapOf("message" to "User created successfully!!")
         return HttpResponse.status<Any>(HttpStatus.OK).body(res)
     }
 
-    @Post("/user/{username}/addToWallet")
+    @Post("/user/{userName}/addToWallet")
     fun addToWallet(username: String, @Body body: AddToWalletInput): HttpResponse<*> {
         val errorMessages: ArrayList<String> = ArrayList<String>()
         //Input Parsing
@@ -89,22 +91,22 @@ class EndPoints {
 
         val amountToBeAdded: Long? = body.amount?.toLong()
 
-        if(amountToBeAdded == null){
+        if (amountToBeAdded == null) {
             errorMessages.add("Amount field is missing")
         }
 
-        if(amountToBeAdded!! <= 0 ){
+        if (amountToBeAdded!! <= 0) {
             errorMessages.add("Amount added to wallet has to be positive.")
         }
 
         if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
-            if(errorMessages[0] == "Username does not exists.")
+            if (errorMessages[0] == "Username does not exists.")
                 return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
             return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
 
-        if(amountToBeAdded != null){
+        if (amountToBeAdded != null) {
 //            if(amountToBeAdded <= 0  || amountToBeAdded > DataStorage.MAX_AMOUNT){
 //                errorMessages.add("Amount to be added is out of range. Amount range 1 to ${DataStorage.MAX_AMOUNT} (both inclusive)")
 //            }
@@ -112,7 +114,8 @@ class EndPoints {
             val lockedMoney = DataStorage.userList[username]!!.account.wallet.getLockedMoney()
 
             if (((amountToBeAdded + freeMoney + lockedMoney) <= 0) ||
-                ((amountToBeAdded + freeMoney + lockedMoney) > DataStorage.MAX_AMOUNT)) {
+                ((amountToBeAdded + freeMoney + lockedMoney) > DataStorage.MAX_AMOUNT)
+            ) {
                 errorMessages.add("Amount exceeds maximum wallet limit. Wallet range 0 to ${DataStorage.MAX_AMOUNT}")
             }
             if (errorMessages.isNotEmpty()) {
@@ -140,16 +143,14 @@ class EndPoints {
 
         if (!Validations.validateUser(username))
             errorMessages.add("username does not exists.")
-        if(quantityToBeAdded == null) {
+        if (quantityToBeAdded == null) {
             errorMessages.add("Quantity field is missing")
 
         }
-        if(errorMessages.isNotEmpty()){
+        if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.OK).body(response)
-        }
-
-        else if(quantityToBeAdded != null) {
+        } else if (quantityToBeAdded != null) {
             if (typeOfESOP == "NON-PERFORMANCE") {
                 val freeInventory = DataStorage.userList[username]!!.account.inventory.getFreeInventory()
                 val lockedInventory = DataStorage.userList[username]!!.account.inventory.getLockedInventory()
@@ -161,8 +162,10 @@ class EndPoints {
                 }
 
             } else if (typeOfESOP == "PERFORMANCE") {
-                val freePerformanceInventory = DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory()
-                val lockedPerformanceInventory = DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory()
+                val freePerformanceInventory =
+                    DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory()
+                val lockedPerformanceInventory =
+                    DataStorage.userList[username]!!.account.inventory.getFreePerformanceInventory()
                 val totalQuantity = freePerformanceInventory + lockedPerformanceInventory + quantityToBeAdded
 
 
@@ -171,7 +174,7 @@ class EndPoints {
                 }
 
             }
-            if(errorMessages.isNotEmpty()){
+            if (errorMessages.isNotEmpty()) {
                 response = mapOf("error" to errorMessages)
                 return HttpResponse.badRequest(response)
             }
@@ -231,16 +234,16 @@ class EndPoints {
 
         if (!Validations.validateUser(username))
             errorMessages.add("username does not exists.")
-        if(body.order_type.isNullOrBlank())
+        if (body.order_type.isNullOrBlank())
             errorMessages.add("order_type is missing, order type should be BUY or SELL")
-        if(body.price == null)
+        if (body.price == null)
             errorMessages.add("price for the order is missing")
-        if(body.quantity == null)
+        if (body.quantity == null)
             errorMessages.add("quantity field for order is missing")
-        if(body.order_type != null && body.order_type == "SELL" && body.esop_type.isNullOrBlank()){
+        if (body.order_type != null && body.order_type == "SELL" && body.esop_type.isNullOrBlank()) {
             errorMessages.add("esop_type is missing, SELL order requires esop_type")
         }
-        if(errorMessages.isNotEmpty()){
+        if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
         }
@@ -256,12 +259,12 @@ class EndPoints {
         if (typeOfESOP !in arrayOf("PERFORMANCE", "NON-PERFORMANCE"))
             errorMessages.add("Invalid type of ESOP, ESOP type should be PERFORMANCE or NON-PERFORMANCE")
 
-        if(errorMessages.isEmpty() && orderPrice != null && orderType != null && orderQuantity != null ){
+        if (errorMessages.isEmpty() && orderPrice != null && orderType != null && orderQuantity != null) {
             //Create Order
             val result = DataStorage.userList[username]!!.addOrder(orderQuantity, orderType, orderPrice, typeOfESOP)
             if (result.isNotEmpty())
                 errorMessages.addAll(result)
-            else{
+            else {
                 val res = mutableMapOf<String, Any>()
                 res["quantity"] = orderQuantity
                 res["order_type"] = orderType
@@ -320,7 +323,15 @@ class EndPoints {
     }
 
     @Error(exception = UnsatisfiedBodyRouteException::class)
-    fun handleEmptyBody(request: HttpRequest<*>, e: UnsatisfiedBodyRouteException): HttpResponse<Map<String, Array<String>>>{
+    fun handleEmptyBody(
+        request: HttpRequest<*>,
+        e: UnsatisfiedBodyRouteException
+    ): HttpResponse<Map<String, Array<String>>> {
         return HttpResponse.badRequest(mapOf("error" to arrayOf("Request body is missing")))
+    }
+
+    @Error(exception = BadRequestException::class)
+    fun handleBadRequestForRegister(request: HttpRequest<*>, e: BadRequestException): HttpResponse<ErrorResponse> {
+        return HttpResponse.badRequest(e.errorResponse)
     }
 }

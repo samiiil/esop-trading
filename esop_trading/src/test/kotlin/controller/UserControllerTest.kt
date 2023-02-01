@@ -1,6 +1,6 @@
 package controller
 
-import com.fasterxml.jackson.core.type.TypeReference
+import models.RegisterResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -56,23 +56,20 @@ class UserControllerTest {
     @Test
     fun shouldRegisterAValidUser() {
         val registerInput = RegisterInput(
-            username = "amy_santiago",
+            userName = "amy_santiago",
             firstName = "Amy",
             lastName = "Santiago",
             phoneNumber = "1234567890",
-            email = "amy@gmail.com"
+            emailID = "amy@gmail.com"
         )
         val request = HttpRequest.POST(registerURI, registerInput)
         val responseString = client.toBlocking().retrieve(request)
-        println(responseString)
-
-        val typeRef: TypeReference<Map<String, String>> = object : TypeReference<Map<String, String>>() {}
-        val response: Map<String, String> = mapper.readValue(responseString, typeRef)
-        assertEquals("amy_santiago", response["username"])
-        assertEquals("Amy", response["firstName"])
-        assertEquals("Santiago", response["lastName"])
-        assertEquals("1234567890", response["phoneNumber"])
-        assertEquals("amy@gmail.com", response["email"])
+        val response: RegisterResponse = mapper.readValue(responseString, RegisterResponse::class.java)
+        assertEquals("amy_santiago", response.userName)
+        assertEquals("Amy", response.firstName)
+        assertEquals("Santiago", response.lastName)
+        assertEquals("1234567890", response.phoneNumber)
+        assertEquals("amy@gmail.com", response.emailID)
     }
 
     @Test

@@ -1,9 +1,9 @@
 package models
 
-data class RegisterInput(
+data class RegisterResponse(
     val firstName: String? = null,
     val lastName: String? = null,
-    val email: String? = null,
+    val emailID: String? = null,
     val phoneNumber: String? = null,
-    val username: String? = null,
+    val userName: String? = null,
 )
