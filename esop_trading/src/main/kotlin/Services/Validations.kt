@@ -125,6 +125,9 @@ class Validations {
                 if(!validDomain(domain)){
                     errorList.add("Invalid Email address")
                 }
+                if(emailId.length>255){
+                    errorList.add("Email must be less than 255 characters")
+                }
                 if(splitMail[0].elementAt(splitMail[0].length-1)=='.'){
                     errorList.add("Invalid Email address")
                 }
