@@ -293,7 +293,7 @@ class EndPoints {
 
     //for handling missing fields in json input
     @Error
-    fun handleConversionError(request: HttpRequest<*>, e: ConversionErrorException): Any {
+    fun handleBadRequest(request: HttpRequest<*>, e: ConversionErrorException): Any {
         val errorMessages = arrayOf("Add missing fields to the request")
         val response = mapOf("error" to errorMessages)
         return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
@@ -301,7 +301,8 @@ class EndPoints {
 
     @Error(exception = UnsatisfiedBodyRouteException::class)
     fun handleEmptyBody(
-        request: HttpRequest<*>
+        request: HttpRequest<*>,
+        e: UnsatisfiedBodyRouteException
     ): HttpResponse<Map<String, Array<String>>> {
         return HttpResponse.badRequest(mapOf("error" to arrayOf("Request body is missing")))
     }
