@@ -8,7 +8,6 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
-import io.micronaut.http.hateoas.JsonError
 import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
 import models.*
 import services.Validations
@@ -70,7 +69,7 @@ class EndPoints {
 
     @Post("/user/{userName}/addToWallet")
     fun addToWallet(userName: String, @Body body: AddToWalletInput): HttpResponse<*> {
-        val errorMessages: ArrayList<String> = ArrayList<String>()
+        val errorMessages: ArrayList<String> = ArrayList()
         //Input Parsing
 
         val response: Map<String, *>
@@ -95,21 +94,19 @@ class EndPoints {
             return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
 
-        if (amountToBeAdded != null) {
-            val freeMoney = DataStorage.userList[userName]!!.account.wallet.getFreeMoney()
-            val lockedMoney = DataStorage.userList[userName]!!.account.wallet.getLockedMoney()
+        val freeMoney = DataStorage.userList[userName]!!.account.wallet.getFreeMoney()
+        val lockedMoney = DataStorage.userList[userName]!!.account.wallet.getLockedMoney()
 
-            if (((amountToBeAdded + freeMoney + lockedMoney) <= 0) ||
-                ((amountToBeAdded + freeMoney + lockedMoney) > DataStorage.MAX_AMOUNT)
-            ) {
-                errorMessages.add("Amount exceeds maximum wallet limit. Wallet range 0 to ${DataStorage.MAX_AMOUNT}")
-            }
-            if (errorMessages.isNotEmpty()) {
-                response = mapOf("error" to errorMessages)
-                return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
-            }
-            DataStorage.userList[userName]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
+        if (((amountToBeAdded + freeMoney + lockedMoney) <= 0) ||
+            ((amountToBeAdded + freeMoney + lockedMoney) > DataStorage.MAX_AMOUNT)
+        ) {
+            errorMessages.add("Amount exceeds maximum wallet limit. Wallet range 0 to ${DataStorage.MAX_AMOUNT}")
         }
+        if (errorMessages.isNotEmpty()) {
+            response = mapOf("error" to errorMessages)
+            return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
+        }
+        DataStorage.userList[userName]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
 
         response = mapOf("message" to "$amountToBeAdded amount added to account")
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
@@ -295,8 +292,7 @@ class EndPoints {
     fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
         //handles errors in json syntax
         val errorMap = mutableMapOf<String, ArrayList<String>>()
-        val error = JsonError("Invalid JSON: ${e.message}")
-        errorMap["error"] = arrayListOf<String>("Invalid JSON: ${e.message}")
+        errorMap["error"] = arrayListOf("Invalid JSON: ${e.message}")
         return HttpResponse.badRequest(errorMap)
     }
 
@@ -324,5 +320,10 @@ class EndPoints {
     fun handleWrongHttpMethod(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
         val response = ErrorResponse(arrayListOf("${request.method} method is not allowed for ${request.uri}."))
         return HttpResponse.notAllowed<ErrorResponse>().body(response)
+    }
+
+    @Error(global = true, exception = BadRequestException::class)
+    fun handleCustomErrors(exception: BadRequestException) : HttpResponse<ErrorResponse>{
+        return HttpResponse.badRequest(exception.errorResponse)
     }
 }
