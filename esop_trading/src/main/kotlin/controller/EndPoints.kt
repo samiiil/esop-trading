@@ -49,7 +49,7 @@ class EndPoints {
 
         for (error in Validations.validateFirstName(firstName)) errorList.add(error)
         for (error in Validations.validateLastName(lastName)) errorList.add(error)
-        for (error in Validations.validatePhoneNumber(phoneNumber, errorList)) errorList.add(error)
+        for (error in Validations.validatePhoneNumber(phoneNumber)) errorList.add(error)
         for (error in Validations.validateEmailIds(emailID)) errorList.add(error)
         for (error in Validations.validateUserName(userName)) errorList.add(error)
 
@@ -308,8 +308,7 @@ class EndPoints {
     fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
         //handles errors in json syntax
         val errorMap = mutableMapOf<String, ArrayList<String>>()
-        val error = JsonError("Invalid JSON: ${e.message}")
-        errorMap["error"] = arrayListOf<String>("Invalid JSON: ${e.message}")
+        errorMap["error"] = arrayListOf("Invalid JSON: ${e.message}")
         return HttpResponse.badRequest(errorMap)
     }
 
@@ -329,8 +328,8 @@ class EndPoints {
         return HttpResponse.badRequest(mapOf("error" to arrayOf("Request body is missing")))
     }
 
-    @Error(exception = BadRequestException::class)
-    fun handleBadRequestForRegister(request: HttpRequest<*>, e: BadRequestException): HttpResponse<ErrorResponse> {
-        return HttpResponse.badRequest(e.errorResponse)
+    @Error(global = true, status = HttpStatus.NOT_FOUND)
+    fun handleInvalidRoute(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
+        return HttpResponse.notFound(ErrorResponse(arrayListOf("Invalid URI - ${request.uri}")))
     }
 }
