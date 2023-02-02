@@ -1,5 +1,4 @@
 package services
-
 import models.Order
 
 class BuyOrderingComparator {

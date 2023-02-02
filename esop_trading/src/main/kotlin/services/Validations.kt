@@ -1,5 +1,6 @@
 package services
 
+import constants.PhoneNumber
 import io.micronaut.json.tree.JsonObject
 import models.DataStorage
 
@@ -156,32 +157,36 @@ class Validations {
                 return errorList
             }
             if (DataStorage.registeredPhoneNumbers.contains(phoneNumber)) {
-                errorList.add("Phone number already exists")
+                errorList.add(PhoneNumber.ALREADY_EXISTS_ERROR_MESSAGE)
+                return errorList
             }
-            if (phoneNumber.length < 10) {
-                errorList.add("Invalid phone number. Accepted phoneNumber formats: 10 digits, +{two digit country code} 10 digits, {one/two digit country code} 10 digits")
+            if (phoneNumber.length < 10 || phoneNumber.length>14) {
+                errorList.add(PhoneNumber.INVALID_ERROR_MESSAGE)
+                return errorList
             }
-            if (phoneNumber.length == 13) {
-                if (!phoneNumber.substring(0, 3).matches(Regex("\\+?\\d\\d")) && phoneNumber.substring(3)
-                        .matches(Regex("\\d*"))
-                )
-                    errorList.add("Invalid phone number. Accepted phoneNumber formats: 10 digits, +{two digit country code} 10 digits, {one/two digit country code} 10 digits")
-            } else if (phoneNumber.length == 12) {
-                if (phoneNumber[0] == '+') {
-                    if (!phoneNumber.substring(1).matches(Regex("\\d*"))) {
-                        errorList.add("Invalid phone number. Accepted phoneNumber formats: 10 digits, +{two digit country code} 10 digits, {one/two digit country code} 10 digits")
-                    }
-                } else {
-                    if (!phoneNumber.matches(Regex("\\d*"))) {
-                        errorList.add("Invalid phone number. Accepted phoneNumber formats: 10 digits, +{two digit country code} 10 digits, {one/two digit country code} 10 digits")
-                    }
-                }
-            } else if (phoneNumber.length == 11 || phoneNumber.length == 10) {
-                if (!phoneNumber.matches(Regex("\\d*"))) {
-                    errorList.add("Invalid phone number. Accepted phoneNumber formats: 10 digits, +{two digit country code} 10 digits, {one/two digit country code} 10 digits")
+            val code=countryCode(phoneNumber)
+            if(code.length==1 && code[0]!='0'){
+                errorList.add(PhoneNumber.TRUNK_ERROR_MESSAGE)
+                return errorList
+            }
+            if(code.isNotEmpty() && !code.matches(Regex("\\+?\\d*"))){
+                errorList.add(PhoneNumber.COUNTRY_CODE_ERROR_MESSAGE)
+                return errorList
+            }else{
+                val number=phoneNumber.subSequence(code.length,phoneNumber.length)
+                if(!number.matches(Regex("\\d*"))){
+                    errorList.add(PhoneNumber.NON_NUMERICAL_ERROR_MESSAGE)
                 }
             }
             return errorList
+        }
+
+        private fun countryCode(phoneNumber: String): String {
+                if (phoneNumber.length == 10 || (phoneNumber.length==11 && phoneNumber[0]=='0'))
+                    return ""
+                return phoneNumber.subSequence(0,phoneNumber.length-10).toString()
+
+
         }
 
         private fun validDomain(domain: String): Boolean {
