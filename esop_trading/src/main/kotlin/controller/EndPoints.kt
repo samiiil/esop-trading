@@ -4,6 +4,7 @@ import exception.BadRequestException
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.*
+import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
 import models.*
 import services.Validations
 import services.saveUser
@@ -286,8 +287,7 @@ class EndPoints {
     fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
         //handles errors in json syntax
         val errorMap = mutableMapOf<String, ArrayList<String>>()
-        val error = JsonError("Invalid JSON: ${e.message}")
-        errorMap["error"] = arrayListOf<String>("Invalid JSON: ${e.message}")
+        errorMap["error"] = arrayListOf("Invalid JSON: ${e.message}")
         return HttpResponse.badRequest(errorMap)
     }
 
@@ -315,5 +315,10 @@ class EndPoints {
     fun handleWrongHttpMethod(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
         val response = ErrorResponse(arrayListOf("${request.method} method is not allowed for ${request.uri}."))
         return HttpResponse.notAllowed<ErrorResponse>().body(response)
+    }
+
+    @Error(global = true, exception = BadRequestException::class)
+    fun handleCustomErrors(exception: BadRequestException) : HttpResponse<ErrorResponse>{
+        return HttpResponse.badRequest(exception.errorResponse)
     }
 }
