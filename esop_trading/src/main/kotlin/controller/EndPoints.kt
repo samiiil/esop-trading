@@ -8,22 +8,16 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
-import io.micronaut.http.hateoas.JsonError
 import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
 import models.*
 import services.Validations
+import services.saveUser
 
 @Controller("/")
 class EndPoints {
     @Post("/user/register")
     fun register(@Body body: RegisterInput): HttpResponse<RegisterResponse> {
         val errorList = arrayListOf<String>()
-
-//        if (errorList.isNotEmpty()) {
-//            val response: Map<String, *>
-//            response = mapOf("error" to errorList)
-//            return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
-//        }
 
         if (body.firstName == null) {
             errorList.add("firstName is missing.")
@@ -55,15 +49,12 @@ class EndPoints {
 
         if (errorList.isEmpty()) {
             if (userName != null && firstName != null && lastName != null && phoneNumber != null && emailID != null) {
-
-                User(userName, firstName, lastName, phoneNumber, emailID)
-
+                val user = User(userName, firstName, lastName, phoneNumber, emailID)
+                saveUser(user)
             }
         }
-        val response: Map<String, *>
         if (errorList.isNotEmpty()) {
             val errorResponse = ErrorResponse(errorList)
-//            return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
             throw BadRequestException(errorResponse)
         }
         val res = RegisterResponse(
@@ -73,7 +64,6 @@ class EndPoints {
             emailID = emailID,
             userName = userName
         )
-        // response = mapOf("message" to "User created successfully!!")
         return HttpResponse.status<Any>(HttpStatus.OK).body(res)
     }
 
@@ -81,7 +71,6 @@ class EndPoints {
     fun addToWallet(userName: String, @Body body: AddToWalletInput): HttpResponse<*> {
         val errorMessages: ArrayList<String> = ArrayList<String>()
         //Input Parsing
-
 
         val response: Map<String, *>
         if (!Validations.validateUser(userName)) {
@@ -106,9 +95,6 @@ class EndPoints {
         }
 
         if (amountToBeAdded != null) {
-//            if(amountToBeAdded <= 0  || amountToBeAdded > DataStorage.MAX_AMOUNT){
-//                errorMessages.add("Amount to be added is out of range. Amount range 1 to ${DataStorage.MAX_AMOUNT} (both inclusive)")
-//            }
             val freeMoney = DataStorage.userList[userName]!!.account.wallet.getFreeMoney()
             val lockedMoney = DataStorage.userList[userName]!!.account.wallet.getLockedMoney()
 
