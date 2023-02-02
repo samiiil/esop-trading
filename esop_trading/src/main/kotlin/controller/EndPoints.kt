@@ -70,7 +70,6 @@ class EndPoints {
     @Post("/user/{userName}/addToWallet")
     fun addToWallet(userName: String, @Body body: AddToWalletInput): HttpResponse<*> {
         val errorMessages: ArrayList<String> = ArrayList()
-        //Input Parsing
 
         val response: Map<String, *>
         if (!Validations.validateUser(userName)) {
@@ -290,10 +289,7 @@ class EndPoints {
 
     @Error
     fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
-        //handles errors in json syntax
-        val errorMap = mutableMapOf<String, ArrayList<String>>()
-        errorMap["error"] = arrayListOf("Invalid JSON: ${e.message}")
-        return HttpResponse.badRequest(errorMap)
+        return HttpResponse.badRequest(ErrorResponse("Invalid JSON: ${e.message}"))
     }
 
     //for handling missing fields in json input
