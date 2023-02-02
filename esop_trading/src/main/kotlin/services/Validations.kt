@@ -101,7 +101,7 @@ class Validations {
         }
 
         fun validateEmailIds(emailId: String?): Collection<String> {
-            val errorList = mutableSetOf<String>()
+            val errorList = mutableSetOf<String>()\
             if (emailId == null) {
                 return errorList
             }

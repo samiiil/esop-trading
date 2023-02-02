@@ -7,6 +7,7 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
+import io.micronaut.http.hateoas.JsonError
 import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
 import models.*
 import services.Validations
@@ -115,6 +116,7 @@ class EndPoints {
             return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
         DataStorage.userList[username]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
+        
 
         response = mapOf("message" to "$amountToBeAdded amount added to account")
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
@@ -300,7 +302,8 @@ class EndPoints {
     fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
         //handles errors in json syntax
         val errorMap = mutableMapOf<String, ArrayList<String>>()
-        errorMap["error"] = arrayListOf("Invalid JSON: ${e.message}")
+        val error = JsonError("Invalid JSON: ${e.message}")
+        errorMap["error"] = arrayListOf<String>("Invalid JSON: ${e.message}")
         return HttpResponse.badRequest(errorMap)
     }
 
