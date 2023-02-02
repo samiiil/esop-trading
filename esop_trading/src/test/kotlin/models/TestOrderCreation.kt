@@ -14,8 +14,8 @@ class TestOrderCreation {
         DataStorage.buyList.clear()
         DataStorage.sellList.clear()
         DataStorage.performanceSellList.clear()
-        DataStorage.orderId = 1
-        DataStorage.orderExecutionId = 1
+        DataStorage.orderId = 1L
+        DataStorage.orderExecutionId = 1L
     }
     @Test
     fun `can create buy order if user has money in wallet`(){
