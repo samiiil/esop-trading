@@ -1,6 +1,9 @@
 package services
 
-import models.*
+import models.DataStorage
+import models.Order
+import models.OrderExecutionLogs
+import java.math.BigInteger
 import kotlin.math.min
 import kotlin.math.roundToLong
 
@@ -77,8 +80,8 @@ class Util {
                 updateSellerInventoryAndWallet(sellOrder, orderQuantity, orderExecutionPrice, isPerformanceESOP)
                 updateBuyerInventoryAndWallet(buyOrder, orderQuantity, orderExecutionPrice)
 
-                DataStorage.TOTAL_FEE_COLLECTED += (orderAmount * DataStorage.COMMISSION_FEE_PERCENTAGE * 0.01).roundToLong()
-
+                val orderFee = (orderAmount*DataStorage.COMMISSION_FEE_PERCENTAGE*0.01).roundToLong()
+                DataStorage.TOTAL_FEE_COLLECTED = DataStorage.TOTAL_FEE_COLLECTED + BigInteger.valueOf(orderFee)
                 val orderExecutionLog =
                     OrderExecutionLogs(generateOrderExecutionId(), orderExecutionPrice, orderQuantity)
                 sellOrder.addOrderExecutionLogs(orderExecutionLog)
