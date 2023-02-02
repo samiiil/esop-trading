@@ -8,9 +8,9 @@ import models.*
 import services.Validations
 import services.saveUser
 
-@Controller("/")
-class EndPoints {
-    @Post("/user/register")
+@Controller("/user")
+class UserController {
+    @Post("/register")
     fun register(@Body body: RegisterInput): HttpResponse<RegisterResponse> {
         val errorList = arrayListOf<String>()
 
@@ -62,7 +62,7 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.OK).body(res)
     }
 
-    @Post("/user/{userName}/addToWallet")
+    @Post("/{userName}/addToWallet")
     fun addToWallet(userName: String, @Body body: AddToWalletInput): HttpResponse<*> {
         val errorMessages: ArrayList<String> = ArrayList()
 
@@ -106,7 +106,7 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 
-    @Post("/user/{userName}/addToInventory")
+    @Post("/{userName}/addToInventory")
     fun addToInventory(userName: String, @Body body: AddToInventoryInput): HttpResponse<*> {
 
         //Input Parsing
@@ -166,7 +166,7 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 
-    @Get("/user/{userName}/accountInformation")
+    @Get("/{userName}/accountInformation")
     fun accountInformation(userName: String): HttpResponse<*> {
 
         val errorMessages: ArrayList<String> = ArrayList()
@@ -203,7 +203,7 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 
-    @Post("/user/{userName}/createOrder")
+    @Post("/{userName}/createOrder")
     fun createOrder(userName: String, @Body body: CreateOrderInput): HttpResponse<*> {
         val errorMessages: ArrayList<String> = ArrayList()
 
@@ -255,7 +255,7 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(res)
     }
 
-    @Get("/user/{userName}/orderHistory")
+    @Get("/{userName}/orderHistory")
     fun orderHistory(userName: String): HttpResponse<*> {
         val errorMessages: ArrayList<String> = ArrayList()
 
@@ -274,11 +274,5 @@ class EndPoints {
         }
         response = DataStorage.userList[userName]!!.getOrderDetails()
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
-    }
-
-    @Get("/fees")
-    fun getFees(): HttpResponse<*> {
-        return HttpResponse.status<Any>(HttpStatus.OK)
-            .body(mapOf(Pair("TotalFees", DataStorage.TOTAL_FEE_COLLECTED)))
     }
 }
