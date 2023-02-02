@@ -1,6 +1,10 @@
 package controller
 
 import exception.BadRequestException
+import com.fasterxml.jackson.core.JsonParseException
+import exception.ValidationException
+import io.micronaut.core.convert.exceptions.ConversionErrorException
+import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.*
@@ -51,7 +55,7 @@ class EndPoints {
         }
         if (errorList.isNotEmpty()) {
             val errorResponse = ErrorResponse(errorList)
-            throw BadRequestException(errorResponse)
+            throw ValidationException(errorResponse)
         }
         val res = RegisterResponse(
             firstName = firstName,
@@ -239,17 +243,14 @@ class EndPoints {
 
         if (errorMessages.isEmpty() && orderPrice != null && orderType != null && orderQuantity != null) {
             //Create Order
-            val result = DataStorage.userList[userName]!!.addOrder(orderQuantity, orderType, orderPrice, typeOfESOP)
-            if (result.isNotEmpty())
-                errorMessages.addAll(result)
-            else {
-                val res = mutableMapOf<String, Any>()
-                res["quantity"] = orderQuantity
-                res["order_type"] = orderType
-                res["price"] = orderPrice
+            DataStorage.userList[userName]!!.addOrderToExecutionQueue(orderQuantity, orderType, orderPrice, typeOfESOP)
 
-                return HttpResponse.status<Any>(HttpStatus.OK).body(res)
-            }
+            val res = mutableMapOf<String, Any>()
+            res["quantity"] = orderQuantity
+            res["order_type"] = orderType
+            res["price"] = orderPrice
+
+            return HttpResponse.status<Any>(HttpStatus.OK).body(res)
 
         }
         val res = mapOf("error" to errorMessages)
@@ -318,8 +319,8 @@ class EndPoints {
         return HttpResponse.notAllowed<ErrorResponse>().body(response)
     }
 
-    @Error(global = true, exception = BadRequestException::class)
-    fun handleCustomErrors(exception: BadRequestException) : HttpResponse<ErrorResponse>{
+    @Error(global = true, exception = ValidationException::class)
+    fun handleCustomErrors(exception: ValidationException) : HttpResponse<ErrorResponse>{
         return HttpResponse.badRequest(exception.errorResponse)
     }
 }

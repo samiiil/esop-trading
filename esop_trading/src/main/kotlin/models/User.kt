@@ -1,5 +1,6 @@
 package models
 
+import exception.ValidationException
 import services.Util
 import kotlin.math.roundToLong
 
@@ -13,45 +14,99 @@ class User(
     private val account: Account = Account()
     val orders: ArrayList<Order> = ArrayList()
 
-    fun addOrder(
+    fun addOrderToExecutionQueue(
         orderQuantity: Long,
         orderType: String,
         orderPrice: Long,
         typeOfESOP: String = "NON-PERFORMANCE"
-    ): ArrayList<String> {
-        val errorList = ArrayList<String>()
-        val amountRequiredToBuy = orderQuantity * orderPrice
+    ){
         if (orderType == "BUY") {
-            if(account.inventory.getFreeInventory() + account.inventory.getLockedInventory() + orderQuantity > DataStorage.MAX_QUANTITY)
-                errorList.add("Inventory threshold will be exceeded")
-            val res = account.wallet.moveFreeMoneyToLockedMoney(amountRequiredToBuy)
-            if(res != "Success") errorList.add(res)
+            addBuyOrder(orderQuantity, orderPrice)
         } else if (orderType == "SELL") {
-            if(account.wallet.getFreeMoney() + account.wallet.getLockedMoney() + amountRequiredToBuy > DataStorage.MAX_AMOUNT)
-                errorList.add("Wallet threshold will be exceeded")
-            val res = if (typeOfESOP == "NON-PERFORMANCE")
-                account.inventory.moveFreeInventoryToLockedInventory(orderQuantity)
-            else
-                account.inventory.moveFreePerformanceInventoryToLockedPerformanceInventory(orderQuantity)
-            if(res != "Success") errorList.add(res)
+            addSellOrder(orderQuantity, orderPrice, typeOfESOP)
         }
-        if (errorList.isEmpty()) {
-            val orderObj = Order(this.username, Util.generateOrderId(), orderQuantity, orderPrice, orderType)
-            orders.add(orderObj)
-            if (orderType == "BUY") {
-                Util.addOrderToBuyList(orderObj)
-            } else {
-                if (typeOfESOP == "NON-PERFORMANCE")
-                    Util.addOrderToSellList(orderObj)
-                else {
-                    Util.addOrderToPerformanceSellList(orderObj)
-                }
-            }
-            Util.matchOrders()
-        }
-        return errorList
+
+        Util.matchOrders()
     }
 
+    private fun addBuyOrder(orderQuantity: Long, orderPrice: Long){
+        throwExceptionIfInvalidBuyOrder(orderQuantity, orderPrice)
+
+        val transactionAmount = orderQuantity * orderPrice
+        moveFreeMoneyToLockedMoney(transactionAmount)
+        val newOrder = Order(username, Util.generateOrderId(), orderQuantity, orderPrice, "BUY")
+        orders.add(newOrder)
+        Util.addOrderToBuyList(newOrder)
+    }
+
+    private fun throwExceptionIfInvalidBuyOrder(orderQuantity: Long, orderPrice: Long) {
+        val errorList = ArrayList<String>()
+        val transactionAmount = orderQuantity * orderPrice
+
+        if(getFreeInventory() + getLockedInventory() + orderQuantity > DataStorage.MAX_QUANTITY)
+            errorList.add("Inventory threshold will be exceeded")
+        if(getFreeMoney() < transactionAmount)
+            errorList.add("Insufficient balance in wallet")
+
+        if(errorList.isNotEmpty())
+            throw ValidationException(ErrorResponse(errorList))
+    }
+
+    private fun addSellOrder(orderQuantity: Long, orderPrice: Long, typeOfESOP: String){
+        if(typeOfESOP == "PERFORMANCE")
+            addPerformanceSellOrder(orderQuantity, orderPrice)
+        else if(typeOfESOP == "NON-PERFORMANCE")
+            addNonPerformanceSellOrder(orderQuantity,orderPrice)
+    }
+
+    private fun addPerformanceSellOrder(orderQuantity: Long, orderPrice: Long){
+        throwExceptionIfInvalidPerformanceEsopSellOrder(orderQuantity, orderPrice)
+
+        moveFreePerformanceInventoryToLockedPerformanceInventory(orderQuantity)
+
+        val newOrder = Order(username, Util.generateOrderId(), orderQuantity, orderPrice, "SELL")
+        orders.add(newOrder)
+
+        Util.addOrderToPerformanceSellList(newOrder)
+    }
+
+    private fun addNonPerformanceSellOrder(orderQuantity: Long, orderPrice: Long){
+        throwExceptionIfInvalidNonPerformanceEsopSellOrder(orderQuantity, orderPrice)
+
+        moveFreeInventoryToLockedInventory(orderQuantity)
+
+        val newOrder = Order(username, Util.generateOrderId(), orderQuantity, orderPrice, "SELL")
+        orders.add(newOrder)
+
+        Util.addOrderToSellList(newOrder)
+    }
+
+    private fun throwExceptionIfInvalidNonPerformanceEsopSellOrder(orderQuantity: Long, orderPrice: Long){
+        val errorList = ArrayList<String>()
+        val transactionAmount = orderQuantity * orderPrice
+        val transactionAmountFeeDeducted = (transactionAmount*(1-DataStorage.COMMISSION_FEE_PERCENTAGE*0.01)).roundToLong()
+
+        if(getFreeInventory() < orderQuantity)
+            errorList.add("Insufficient non-performance ESOPs in inventory")
+        if(getFreeMoney() + getLockedMoney() + transactionAmountFeeDeducted > DataStorage.MAX_AMOUNT)
+            errorList.add("Wallet threshold will be exceeded")
+
+        if(errorList.isNotEmpty())
+            throw ValidationException(ErrorResponse(errorList))
+    }
+
+    private fun throwExceptionIfInvalidPerformanceEsopSellOrder(orderQuantity: Long, orderPrice: Long){
+        val errorList = ArrayList<String>()
+        val transactionAmount = orderQuantity * orderPrice
+
+        if(getFreePerformanceInventory() < orderQuantity)
+            errorList.add("Insufficient performance ESOPs in inventory")
+        if(getFreeMoney() + getLockedMoney() + transactionAmount > DataStorage.MAX_AMOUNT)
+            errorList.add("Wallet threshold will be exceeded")
+
+        if(errorList.isNotEmpty())
+            throw ValidationException(ErrorResponse(errorList))
+    }
     fun getOrderDetails(): Map<String, ArrayList<Map<String,Any>>> {
         if (orders.size == 0) {
             return mapOf("order_history" to ArrayList())
