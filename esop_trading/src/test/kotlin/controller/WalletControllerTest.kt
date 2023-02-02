@@ -15,6 +15,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import services.saveUser
 
 @MicronautTest
 class WalletControllerTest {
@@ -44,13 +45,14 @@ class WalletControllerTest {
         DataStorage.buyList.clear()
         DataStorage.sellList.clear()
         DataStorage.performanceSellList.clear()
-        DataStorage.orderId = 0
-        DataStorage.orderExecutionId = 0
+        DataStorage.orderId = 1L
+        DataStorage.orderExecutionId = 1L
     }
 
     @BeforeEach
     fun setUp() {
-        User("user1", "Amy", "Santiago", "9952053438", "amy@gmail.com")
+        val user = User("user1", "Amy", "Santiago", "9952053438", "amy@gmail.com")
+        saveUser(user)
         DataStorage.userList["user1"]!!.account.wallet.addMoneyToWallet(100)
     }
 
