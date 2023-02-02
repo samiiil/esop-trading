@@ -1,14 +1,9 @@
 package controller
 
-import com.fasterxml.jackson.core.JsonParseException
 import exception.BadRequestException
-import io.micronaut.core.convert.exceptions.ConversionErrorException
-import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
-import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
 import models.*
 import services.Validations
 import services.saveUser
@@ -285,41 +280,5 @@ class EndPoints {
     fun getFees(): HttpResponse<*> {
         return HttpResponse.status<Any>(HttpStatus.OK)
             .body(mapOf(Pair("TotalFees", DataStorage.TOTAL_FEE_COLLECTED)))
-    }
-
-    @Error
-    fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
-        return HttpResponse.badRequest(ErrorResponse("Invalid JSON: ${e.message}"))
-    }
-
-    //for handling missing fields in json input
-    @Error
-    fun handleConversionError(request: HttpRequest<*>, e: ConversionErrorException): Any {
-        val errorMessages = arrayOf("Add missing fields to the request")
-        val response = mapOf("error" to errorMessages)
-        return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
-    }
-
-    @Error(exception = UnsatisfiedBodyRouteException::class)
-    fun handleEmptyBody(
-        request: HttpRequest<*>
-    ): HttpResponse<Map<String, Array<String>>> {
-        return HttpResponse.badRequest(mapOf("error" to arrayOf("Request body is missing")))
-    }
-
-    @Error(global = true, status = HttpStatus.NOT_FOUND)
-    fun handleInvalidRoute(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
-        return HttpResponse.notFound(ErrorResponse(arrayListOf("Invalid URI - ${request.uri}")))
-    }
-
-    @Error(global = true, status = HttpStatus.METHOD_NOT_ALLOWED)
-    fun handleWrongHttpMethod(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
-        val response = ErrorResponse(arrayListOf("${request.method} method is not allowed for ${request.uri}."))
-        return HttpResponse.notAllowed<ErrorResponse>().body(response)
-    }
-
-    @Error(global = true, exception = BadRequestException::class)
-    fun handleCustomErrors(exception: BadRequestException) : HttpResponse<ErrorResponse>{
-        return HttpResponse.badRequest(exception.errorResponse)
     }
 }
