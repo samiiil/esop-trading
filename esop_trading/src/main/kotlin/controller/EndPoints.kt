@@ -89,8 +89,8 @@ class EndPoints {
             return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
 
-        val freeMoney = DataStorage.userList[userName]!!.account.wallet.getFreeMoney()
-        val lockedMoney = DataStorage.userList[userName]!!.account.wallet.getLockedMoney()
+        val freeMoney = DataStorage.userList[userName]!!.getFreeMoney()
+        val lockedMoney = DataStorage.userList[userName]!!.getLockedMoney()
 
         if (((amountToBeAdded + freeMoney + lockedMoney) <= 0) ||
             ((amountToBeAdded + freeMoney + lockedMoney) > DataStorage.MAX_AMOUNT)
@@ -101,7 +101,7 @@ class EndPoints {
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
-        DataStorage.userList[userName]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
+        DataStorage.userList[userName]!!.addMoneyToWallet(amountToBeAdded)
 
         response = mapOf("message" to "$amountToBeAdded amount added to account")
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
@@ -130,8 +130,8 @@ class EndPoints {
             return HttpResponse.status<Any>(HttpStatus.OK).body(response)
         } else if (quantityToBeAdded != null) {
             if (typeOfESOP == "NON-PERFORMANCE") {
-                val freeInventory = DataStorage.userList[userName]!!.account.inventory.getFreeInventory()
-                val lockedInventory = DataStorage.userList[userName]!!.account.inventory.getLockedInventory()
+                val freeInventory = DataStorage.userList[userName]!!.getFreeInventory()
+                val lockedInventory = DataStorage.userList[userName]!!.getLockedInventory()
                 val totalQuantity = freeInventory + lockedInventory + quantityToBeAdded
 
 
@@ -141,9 +141,9 @@ class EndPoints {
 
             } else if (typeOfESOP == "PERFORMANCE") {
                 val freePerformanceInventory =
-                    DataStorage.userList[userName]!!.account.inventory.getFreePerformanceInventory()
+                    DataStorage.userList[userName]!!.getFreePerformanceInventory()
                 val lockedPerformanceInventory =
-                    DataStorage.userList[userName]!!.account.inventory.getFreePerformanceInventory()
+                    DataStorage.userList[userName]!!.getFreePerformanceInventory()
                 val totalQuantity = freePerformanceInventory + lockedPerformanceInventory + quantityToBeAdded
 
 
@@ -156,7 +156,7 @@ class EndPoints {
                 response = mapOf("error" to errorMessages)
                 return HttpResponse.badRequest(response)
             }
-            DataStorage.userList[userName]!!.account.inventory.addEsopToInventory(quantityToBeAdded, typeOfESOP)
+            DataStorage.userList[userName]!!.addEsopToInventory(quantityToBeAdded, typeOfESOP)
         }
         if (errorMessages.size > 0) {
             response = mapOf("error" to errorMessages)
@@ -185,19 +185,19 @@ class EndPoints {
             "Phone" to DataStorage.userList[userName]!!.phoneNumber,
             "EmailID" to DataStorage.userList[userName]!!.emailId,
             "Wallet" to mapOf(
-                "free" to DataStorage.userList[userName]!!.account.wallet.getFreeMoney(),
-                "locked" to DataStorage.userList[userName]!!.account.wallet.getLockedMoney()
+                "free" to DataStorage.userList[userName]!!.getFreeMoney(),
+                "locked" to DataStorage.userList[userName]!!.getLockedMoney()
             ),
             "Inventory" to arrayListOf<Any>(
                 mapOf(
                     "esop_type" to "PERFORMANCE",
-                    "free" to DataStorage.userList[userName]!!.account.inventory.getFreePerformanceInventory(),
-                    "locked" to DataStorage.userList[userName]!!.account.inventory.getLockedPerformanceInventory()
+                    "free" to DataStorage.userList[userName]!!.getFreePerformanceInventory(),
+                    "locked" to DataStorage.userList[userName]!!.getLockedPerformanceInventory()
                 ),
                 mapOf(
                     "esop_type" to "NON-PERFORMANCE",
-                    "free" to DataStorage.userList[userName]!!.account.inventory.getFreeInventory(),
-                    "locked" to DataStorage.userList[userName]!!.account.inventory.getLockedInventory()
+                    "free" to DataStorage.userList[userName]!!.getFreeInventory(),
+                    "locked" to DataStorage.userList[userName]!!.getLockedInventory()
                 )
             )
         )
