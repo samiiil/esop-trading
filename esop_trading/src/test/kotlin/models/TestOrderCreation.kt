@@ -1,7 +1,9 @@
 package models
 
+import exception.ValidationException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import services.saveUser
 
@@ -20,11 +22,10 @@ class TestOrderCreation {
     @Test
     fun `can create buy order if user has money in wallet`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.wallet.addMoneyToWallet(100)
+        user.addMoneyToWallet(100)
 
-        val response = user.addOrder(1, "BUY", 100)
+        user.addOrderToExecutionQueue(1, "BUY", 100)
 
-        assert(response.isEmpty())
         assertEquals(1, user.orders.size)
     }
 
@@ -32,30 +33,31 @@ class TestOrderCreation {
     fun `cannot create buy order if user doesn't have enough money in wallet`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
 
-        val response = user.addOrder(1, "BUY", 100)
+        val exception = assertThrows(ValidationException::class.java){ user.addOrderToExecutionQueue(1, "BUY", 100) }
+        val errors = exception.errorResponse.error
 
-        assertEquals("Insufficient balance in wallet", response[0])
-        assertEquals(0, user.account.wallet.getFreeMoney())
-        assertEquals(0, user.account.wallet.getLockedMoney())
+        assertEquals("Insufficient balance in wallet", errors[0])
+        assertEquals(0, user.getFreeMoney())
+        assertEquals(0, user.getLockedMoney())
     }
 
     @Test
     fun `creating buy order moves money to locked wallet`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.wallet.addMoneyToWallet(100)
+        user.addMoneyToWallet(100)
 
-        user.addOrder(1, "BUY", 100)
+        user.addOrderToExecutionQueue(1, "BUY", 100)
 
-        assertEquals(0, user.account.wallet.getFreeMoney())
-        assertEquals(100, user.account.wallet.getLockedMoney())
+        assertEquals(0, user.getFreeMoney())
+        assertEquals(100, user.getLockedMoney())
     }
 
     @Test
     fun `correct buy order is created`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.wallet.addMoneyToWallet(100)
+        user.addMoneyToWallet(100)
 
-        user.addOrder(1, "BUY", 100)
+        user.addOrderToExecutionQueue(1, "BUY", 100)
 
         assertEquals("Unfilled", DataStorage.buyList.peek().orderStatus)
         assertEquals(1, DataStorage.buyList.peek().orderQuantity)
@@ -67,9 +69,9 @@ class TestOrderCreation {
     @Test
     fun `creating buy order adds order to global buy list`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.wallet.addMoneyToWallet(100)
+        user.addMoneyToWallet(100)
 
-        user.addOrder(1, "BUY", 100)
+        user.addOrderToExecutionQueue(1, "BUY", 100)
 
         assertEquals(1, DataStorage.buyList.size)
         assertEquals(user.orders[0], DataStorage.buyList.peek())
@@ -78,11 +80,10 @@ class TestOrderCreation {
     @Test
     fun `can create sell order if user has enough esops`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.inventory.addEsopToInventory(1)
+        user.addEsopToInventory(1)
 
-        val response = user.addOrder(1, "SELL", 100)
+        user.addOrderToExecutionQueue(1, "SELL", 100)
 
-        assert(response.isEmpty())
         assertEquals(1, user.orders.size)
     }
 
@@ -90,30 +91,31 @@ class TestOrderCreation {
     fun `cannot create sell order if user doesn't have enough esops in inventory`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
 
-        val response = user.addOrder(1, "SELL", 100)
+        val exception = assertThrows(ValidationException::class.java){ user.addOrderToExecutionQueue(1, "SELL", 100) }
+        val errors = exception.errorResponse.error
 
-        assertEquals("Insufficient ESOPs in Inventory", response[0])
-        assertEquals(0, user.account.inventory.getFreeInventory())
-        assertEquals(0, user.account.inventory.getLockedInventory())
+        assertEquals("Insufficient non-performance ESOPs in inventory", errors[0])
+        assertEquals(0, user.getFreeInventory())
+        assertEquals(0, user.getLockedInventory())
     }
 
     @Test
     fun `creating sell order locks esops`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.inventory.addEsopToInventory(1)
+        user.addEsopToInventory(1)
 
-        user.addOrder(1, "SELL", 100)
+        user.addOrderToExecutionQueue(1, "SELL", 100)
 
-        assertEquals(0, user.account.inventory.getFreeInventory())
-        assertEquals(1, user.account.inventory.getLockedInventory())
+        assertEquals(0, user.getFreeInventory())
+        assertEquals(1, user.getLockedInventory())
     }
 
     @Test
     fun `correct sell order is created`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.inventory.addEsopToInventory(1)
+        user.addEsopToInventory(1)
 
-        user.addOrder(1, "SELL", 100)
+        user.addOrderToExecutionQueue(1, "SELL", 100)
 
         assertEquals("Unfilled", DataStorage.sellList.peek().orderStatus)
         assertEquals(1, DataStorage.sellList.peek().orderQuantity)
@@ -125,9 +127,9 @@ class TestOrderCreation {
     @Test
     fun `creating sell order adds order to global sell list`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.inventory.addEsopToInventory(1)
+        user.addEsopToInventory(1)
 
-        user.addOrder(1, "SELL", 100)
+        user.addOrderToExecutionQueue(1, "SELL", 100)
 
         assertEquals(1, DataStorage.sellList.size)
         assertEquals(user.orders[0], DataStorage.sellList.peek())
@@ -136,11 +138,10 @@ class TestOrderCreation {
     @Test
     fun `can create performance sell order if user has enough performance esops`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.inventory.addEsopToInventory(1, "PERFORMANCE")
+        user.addEsopToInventory(1, "PERFORMANCE")
 
-        val response = user.addOrder(1, "SELL", 100, "PERFORMANCE")
+        user.addOrderToExecutionQueue(1, "SELL", 100, "PERFORMANCE")
 
-        assert(response.isEmpty())
         assertEquals(1, user.orders.size)
     }
 
@@ -148,30 +149,31 @@ class TestOrderCreation {
     fun `cannot create performance sell order if user doesn't have enough performance esops in inventory`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
 
-        val response = user.addOrder(1, "SELL", 100, "PERFORMANCE")
+        val exception = assertThrows(ValidationException::class.java){ user.addOrderToExecutionQueue(1, "SELL", 100, "PERFORMANCE") }
+        val errors = exception.errorResponse.error
 
-        assertEquals("Insufficient ESOPs in Inventory", response[0])
-        assertEquals(0, user.account.inventory.getFreePerformanceInventory())
-        assertEquals(0, user.account.inventory.getLockedPerformanceInventory())
+        assertEquals("Insufficient performance ESOPs in inventory", errors[0])
+        assertEquals(0, user.getFreePerformanceInventory())
+        assertEquals(0, user.getLockedPerformanceInventory())
     }
 
     @Test
     fun `creating performance sell order locks esops`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.inventory.addEsopToInventory(1, "PERFORMANCE")
+        user.addEsopToInventory(1, "PERFORMANCE")
 
-        user.addOrder(1, "SELL", 100, "PERFORMANCE")
+        user.addOrderToExecutionQueue(1, "SELL", 100, "PERFORMANCE")
 
-        assertEquals(0, user.account.inventory.getFreePerformanceInventory())
-        assertEquals(1, user.account.inventory.getLockedPerformanceInventory())
+        assertEquals(0, user.getFreePerformanceInventory())
+        assertEquals(1, user.getLockedPerformanceInventory())
     }
 
     @Test
     fun `correct performance sell order is created`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.inventory.addEsopToInventory(1, "PERFORMANCE")
+        user.addEsopToInventory(1, "PERFORMANCE")
 
-        user.addOrder(1, "SELL", 100, "PERFORMANCE")
+        user.addOrderToExecutionQueue(1, "SELL", 100, "PERFORMANCE")
 
         assertEquals("Unfilled", DataStorage.performanceSellList.peek().orderStatus)
         assertEquals(1, DataStorage.performanceSellList.peek().orderQuantity)
@@ -183,9 +185,9 @@ class TestOrderCreation {
     @Test
     fun `creating performance sell order adds order to global performance sell list`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.inventory.addEsopToInventory(1, "PERFORMANCE")
+        user.addEsopToInventory(1, "PERFORMANCE")
 
-        user.addOrder(1, "SELL", 100, "PERFORMANCE")
+        user.addOrderToExecutionQueue(1, "SELL", 100, "PERFORMANCE")
 
         assertEquals(1, DataStorage.performanceSellList.size)
         assertEquals(user.orders[0], DataStorage.performanceSellList.peek())
@@ -203,8 +205,8 @@ class TestOrderCreation {
     @Test
     fun `order details for unfilled order is set correctly`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.wallet.addMoneyToWallet(100)
-        user.addOrder(1, "BUY", 100)
+        user.addMoneyToWallet(100)
+        user.addOrderToExecutionQueue(1, "BUY", 100)
 
         val orderDetails = user.getOrderDetails()
 
@@ -222,10 +224,10 @@ class TestOrderCreation {
         val seller = User(firstName = "user2", lastName = "user2", emailId = "user2@example.com", phoneNumber = "+911234567892", username = "user2")
         saveUser(buyer)
         saveUser(seller)
-        buyer.account.wallet.addMoneyToWallet(200)
-        seller.account.inventory.addEsopToInventory(1)
-        buyer.addOrder(2, "BUY",100)
-        seller.addOrder(1, "SELL", 100)
+        buyer.addMoneyToWallet(200)
+        seller.addEsopToInventory(1)
+        buyer.addOrderToExecutionQueue(2, "BUY",100)
+        seller.addOrderToExecutionQueue(1, "SELL", 100)
 
         val orderDetails = buyer.getOrderDetails()
 
@@ -244,10 +246,10 @@ class TestOrderCreation {
         saveUser(buyer)
         saveUser(seller)
 
-        buyer.account.wallet.addMoneyToWallet(200)
-        seller.account.inventory.addEsopToInventory(1)
-        buyer.addOrder(2, "BUY",100)
-        seller.addOrder(1, "SELL", 100)
+        buyer.addMoneyToWallet(200)
+        seller.addEsopToInventory(1)
+        buyer.addOrderToExecutionQueue(2, "BUY",100)
+        seller.addOrderToExecutionQueue(1, "SELL", 100)
 
         val orderDetails = seller.getOrderDetails()
 
@@ -262,7 +264,7 @@ class TestOrderCreation {
     @Test
     fun `can log or print an order`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.inventory.addEsopToInventory(1, "PERFORMANCE")
+        user.addEsopToInventory(1, "PERFORMANCE")
         val expected = """
             username:user
             orderId:1
@@ -273,7 +275,7 @@ class TestOrderCreation {
             remainingQuantity:1
 
         """.trimIndent()
-        user.addOrder(1,"SELL", 10, "PERFORMANCE")
+        user.addOrderToExecutionQueue(1,"SELL", 10, "PERFORMANCE")
 
         assertEquals(expected,user.orders[0].toString())
     }
@@ -281,24 +283,26 @@ class TestOrderCreation {
     @Test
     fun `cannot create sell order that will cause wallet limit to be exceeded`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.wallet.addMoneyToWallet(DataStorage.MAX_AMOUNT-10L)
-        user.account.inventory.addEsopToInventory(1)
+        user.addMoneyToWallet(DataStorage.MAX_AMOUNT-10L)
+        user.addEsopToInventory(1)
 
-        val response = user.addOrder(1, "SELL",15)
+        val exception = assertThrows(ValidationException::class.java){ user.addOrderToExecutionQueue(1, "SELL",15) }
+        val errors = exception.errorResponse.error
 
-        assertEquals(1, response.size)
-        assertEquals("Wallet threshold will be exceeded", response[0])
+        assertEquals(1, errors.size)
+        assertEquals("Wallet threshold will be exceeded", errors[0])
     }
 
     @Test
     fun `cannot create buy order that will cause inventory limit to be exceeded`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
-        user.account.inventory.addEsopToInventory(DataStorage.MAX_QUANTITY-10L)
-        user.account.wallet.addMoneyToWallet(150)
+        user.addEsopToInventory(DataStorage.MAX_QUANTITY-10L)
+        user.addMoneyToWallet(150)
 
-        val response = user.addOrder(15, "BUY",10)
+        val exception = assertThrows(ValidationException::class.java){ user.addOrderToExecutionQueue(15, "BUY",10) }
+        val errors = exception.errorResponse.error
 
-        assertEquals(1, response.size)
-        assertEquals("Inventory threshold will be exceeded", response[0])
+        assertEquals(1, errors.size)
+        assertEquals("Inventory threshold will be exceeded", errors[0])
     }
 }
