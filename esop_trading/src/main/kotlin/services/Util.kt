@@ -99,24 +99,24 @@ class Util {
             orderExecutionPrice: Long,
             isPerformanceESOP: Boolean
         ) {
-            val sellerAccount = DataStorage.userList[sellOrder.userName]!!.account
+            val seller = DataStorage.userList[sellOrder.userName]!!
             val orderAmount = orderQuantity * orderExecutionPrice
-            sellerAccount.inventory.updateLockedInventory(orderQuantity, isPerformanceESOP)
-            sellerAccount.wallet.addMoneyToWallet((orderAmount * (1 - DataStorage.COMMISSION_FEE_PERCENTAGE * 0.01)).roundToLong())
+            seller.updateLockedInventory(orderQuantity, isPerformanceESOP)
+            seller.addMoneyToWallet((orderAmount * (1 - DataStorage.COMMISSION_FEE_PERCENTAGE * 0.01)).roundToLong())
         }
 
         private fun updateBuyerInventoryAndWallet(buyOrder: Order, orderQuantity: Long, orderExecutionPrice: Long) {
-            val buyerAccount = DataStorage.userList[buyOrder.userName]!!.account
+            val buyer = DataStorage.userList[buyOrder.userName]!!
             val orderAmount = orderQuantity * orderExecutionPrice
-            buyerAccount.wallet.updateLockedMoney(orderAmount)
-            buyerAccount.inventory.addEsopToInventory(orderQuantity)
+            buyer.updateLockedMoney(orderAmount)
+            buyer.addEsopToInventory(orderQuantity)
 
             //Need to send difference back to free wallet when high buy and low sell are paired
             if (buyOrder.orderPrice > orderExecutionPrice) {
                 val amountToBeMovedFromLockedWalletToFreeWallet =
                     orderQuantity * (buyOrder.orderPrice - orderExecutionPrice)
-                buyerAccount.wallet.updateLockedMoney(amountToBeMovedFromLockedWalletToFreeWallet)
-                buyerAccount.wallet.addMoneyToWallet(amountToBeMovedFromLockedWalletToFreeWallet)
+                buyer.updateLockedMoney(amountToBeMovedFromLockedWalletToFreeWallet)
+                buyer.addMoneyToWallet(amountToBeMovedFromLockedWalletToFreeWallet)
             }
         }
     }

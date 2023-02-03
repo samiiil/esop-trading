@@ -64,45 +64,45 @@ class TestUserRegistration {
     fun `user wallet and inventory are initially empty`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
 
-        assertEquals(0, user.account.wallet.getFreeMoney())
-        assertEquals(0, user.account.wallet.getLockedMoney())
-        assertEquals(0, user.account.inventory.getFreeInventory())
-        assertEquals(0, user.account.inventory.getLockedInventory())
-        assertEquals(0, user.account.inventory.getFreePerformanceInventory())
-        assertEquals(0, user.account.inventory.getLockedPerformanceInventory())
+        assertEquals(0, user.getFreeMoney())
+        assertEquals(0, user.getLockedMoney())
+        assertEquals(0, user.getFreeInventory())
+        assertEquals(0, user.getLockedInventory())
+        assertEquals(0, user.getFreePerformanceInventory())
+        assertEquals(0, user.getLockedPerformanceInventory())
     }
 
     @Test
     fun `can add money to wallet`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
 
-        user.account.wallet.addMoneyToWallet(100)
+        user.addMoneyToWallet(100)
 
-        assertEquals(100, user.account.wallet.getFreeMoney())
-        assertEquals(0, user.account.wallet.getLockedMoney())
+        assertEquals(100, user.getFreeMoney())
+        assertEquals(0, user.getLockedMoney())
     }
 
     @Test
     fun `can add normal ESOPs to inventory`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
 
-        user.account.inventory.addEsopToInventory(10)
+        user.addEsopToInventory(10)
 
-        assertEquals(10, user.account.inventory.getFreeInventory())
-        assertEquals(0, user.account.inventory.getLockedInventory())
-        assertEquals(0, user.account.inventory.getFreePerformanceInventory())
-        assertEquals(0, user.account.inventory.getLockedPerformanceInventory())
+        assertEquals(10, user.getFreeInventory())
+        assertEquals(0, user.getLockedInventory())
+        assertEquals(0, user.getFreePerformanceInventory())
+        assertEquals(0, user.getLockedPerformanceInventory())
     }
 
     @Test
     fun `can add performance ESOPs to inventory`(){
         val user = User(firstName = "user", lastName = "user", emailId = "user@example.com", phoneNumber = "+911234567890", username = "user")
 
-        user.account.inventory.addEsopToInventory(10, "PERFORMANCE")
+        user.addEsopToInventory(10, "PERFORMANCE")
 
-        assertEquals(10, user.account.inventory.getFreePerformanceInventory())
-        assertEquals(0, user.account.inventory.getLockedPerformanceInventory())
-        assertEquals(0, user.account.inventory.getFreeInventory())
-        assertEquals(0, user.account.inventory.getLockedInventory())
+        assertEquals(10, user.getFreePerformanceInventory())
+        assertEquals(0, user.getLockedPerformanceInventory())
+        assertEquals(0, user.getFreeInventory())
+        assertEquals(0, user.getLockedInventory())
     }
 }

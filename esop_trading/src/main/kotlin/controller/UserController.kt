@@ -1,9 +1,13 @@
 package controller
 
-import exception.BadRequestException
+import com.fasterxml.jackson.core.JsonParseException
+import exception.ValidationException
+import io.micronaut.core.convert.exceptions.ConversionErrorException
+import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.*
+import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
 import models.*
 import services.Validations
 import services.saveUser
@@ -13,22 +17,6 @@ class UserController {
     @Post("/register")
     fun register(@Body body: RegisterInput): HttpResponse<RegisterResponse> {
         val errorList = arrayListOf<String>()
-
-        if (body.firstName == null) {
-            errorList.add("firstName is missing.")
-        }
-        if (body.lastName == null) {
-            errorList.add("lastName is missing.")
-        }
-        if (body.phoneNumber == null) {
-            errorList.add("phoneNumber is missing.")
-        }
-        if (body.emailID == null) {
-            errorList.add("email is missing.")
-        }
-        if (body.userName == null) {
-            errorList.add("userName is missing.")
-        }
 
         val firstName: String? = body.firstName?.trim()
         val lastName: String? = body.lastName?.trim()
@@ -50,7 +38,7 @@ class UserController {
         }
         if (errorList.isNotEmpty()) {
             val errorResponse = ErrorResponse(errorList)
-            throw BadRequestException(errorResponse)
+            throw ValidationException(errorResponse)
         }
         val res = RegisterResponse(
             firstName = firstName,
@@ -88,8 +76,8 @@ class UserController {
             return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
 
-        val freeMoney = DataStorage.userList[userName]!!.account.wallet.getFreeMoney()
-        val lockedMoney = DataStorage.userList[userName]!!.account.wallet.getLockedMoney()
+        val freeMoney = DataStorage.userList[userName]!!.getFreeMoney()
+        val lockedMoney = DataStorage.userList[userName]!!.getLockedMoney()
 
         if (((amountToBeAdded + freeMoney + lockedMoney) <= 0) ||
             ((amountToBeAdded + freeMoney + lockedMoney) > DataStorage.MAX_AMOUNT)
@@ -100,7 +88,7 @@ class UserController {
             response = mapOf("error" to errorMessages)
             return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
-        DataStorage.userList[userName]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
+        DataStorage.userList[userName]!!.addMoneyToWallet(amountToBeAdded)
 
         response = mapOf("message" to "$amountToBeAdded amount added to account")
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
@@ -129,8 +117,8 @@ class UserController {
             return HttpResponse.status<Any>(HttpStatus.OK).body(response)
         } else if (quantityToBeAdded != null) {
             if (typeOfESOP == "NON-PERFORMANCE") {
-                val freeInventory = DataStorage.userList[userName]!!.account.inventory.getFreeInventory()
-                val lockedInventory = DataStorage.userList[userName]!!.account.inventory.getLockedInventory()
+                val freeInventory = DataStorage.userList[userName]!!.getFreeInventory()
+                val lockedInventory = DataStorage.userList[userName]!!.getLockedInventory()
                 val totalQuantity = freeInventory + lockedInventory + quantityToBeAdded
 
 
@@ -140,9 +128,9 @@ class UserController {
 
             } else if (typeOfESOP == "PERFORMANCE") {
                 val freePerformanceInventory =
-                    DataStorage.userList[userName]!!.account.inventory.getFreePerformanceInventory()
+                    DataStorage.userList[userName]!!.getFreePerformanceInventory()
                 val lockedPerformanceInventory =
-                    DataStorage.userList[userName]!!.account.inventory.getFreePerformanceInventory()
+                    DataStorage.userList[userName]!!.getFreePerformanceInventory()
                 val totalQuantity = freePerformanceInventory + lockedPerformanceInventory + quantityToBeAdded
 
 
@@ -155,7 +143,7 @@ class UserController {
                 response = mapOf("error" to errorMessages)
                 return HttpResponse.badRequest(response)
             }
-            DataStorage.userList[userName]!!.account.inventory.addEsopToInventory(quantityToBeAdded, typeOfESOP)
+            DataStorage.userList[userName]!!.addEsopToInventory(quantityToBeAdded, typeOfESOP)
         }
         if (errorMessages.size > 0) {
             response = mapOf("error" to errorMessages)
@@ -184,19 +172,19 @@ class UserController {
             "Phone" to DataStorage.userList[userName]!!.phoneNumber,
             "EmailID" to DataStorage.userList[userName]!!.emailId,
             "Wallet" to mapOf(
-                "free" to DataStorage.userList[userName]!!.account.wallet.getFreeMoney(),
-                "locked" to DataStorage.userList[userName]!!.account.wallet.getLockedMoney()
+                "free" to DataStorage.userList[userName]!!.getFreeMoney(),
+                "locked" to DataStorage.userList[userName]!!.getLockedMoney()
             ),
             "Inventory" to arrayListOf<Any>(
                 mapOf(
                     "esop_type" to "PERFORMANCE",
-                    "free" to DataStorage.userList[userName]!!.account.inventory.getFreePerformanceInventory(),
-                    "locked" to DataStorage.userList[userName]!!.account.inventory.getLockedPerformanceInventory()
+                    "free" to DataStorage.userList[userName]!!.getFreePerformanceInventory(),
+                    "locked" to DataStorage.userList[userName]!!.getLockedPerformanceInventory()
                 ),
                 mapOf(
                     "esop_type" to "NON-PERFORMANCE",
-                    "free" to DataStorage.userList[userName]!!.account.inventory.getFreeInventory(),
-                    "locked" to DataStorage.userList[userName]!!.account.inventory.getLockedInventory()
+                    "free" to DataStorage.userList[userName]!!.getFreeInventory(),
+                    "locked" to DataStorage.userList[userName]!!.getLockedInventory()
                 )
             )
         )
@@ -238,17 +226,14 @@ class UserController {
 
         if (errorMessages.isEmpty() && orderPrice != null && orderType != null && orderQuantity != null) {
             //Create Order
-            val result = DataStorage.userList[userName]!!.addOrder(orderQuantity, orderType, orderPrice, typeOfESOP)
-            if (result.isNotEmpty())
-                errorMessages.addAll(result)
-            else {
-                val res = mutableMapOf<String, Any>()
-                res["quantity"] = orderQuantity
-                res["order_type"] = orderType
-                res["price"] = orderPrice
+            DataStorage.userList[userName]!!.addOrderToExecutionQueue(orderQuantity, orderType, orderPrice, typeOfESOP)
 
-                return HttpResponse.status<Any>(HttpStatus.OK).body(res)
-            }
+            val res = mutableMapOf<String, Any>()
+            res["quantity"] = orderQuantity
+            res["order_type"] = orderType
+            res["price"] = orderPrice
+
+            return HttpResponse.status<Any>(HttpStatus.OK).body(res)
 
         }
         val res = mapOf("error" to errorMessages)

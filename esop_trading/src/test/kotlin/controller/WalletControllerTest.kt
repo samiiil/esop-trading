@@ -53,7 +53,7 @@ class WalletControllerTest {
     fun setUp() {
         val user = User("user1", "Amy", "Santiago", "9952053438", "amy@gmail.com")
         saveUser(user)
-        DataStorage.userList["user1"]!!.account.wallet.addMoneyToWallet(100)
+        DataStorage.userList["user1"]!!.addMoneyToWallet(100)
     }
 
     @Test
@@ -78,7 +78,7 @@ class WalletControllerTest {
 
         //assertEquals()
         assertEquals("$amountToBeAdded amount added to account", response.message)
-        assertEquals(110, DataStorage.userList["user1"]!!.account.wallet.getFreeMoney()) //100 added in setup
+        assertEquals(110, DataStorage.userList["user1"]!!.getFreeMoney()) //100 added in setup
     }
 
     @Test
@@ -130,8 +130,8 @@ class WalletControllerTest {
         val response: ErrorResponse =
             mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
 
-        assertEquals(HttpStatus.UNAUTHORIZED, exception.status)
-        assertEquals("Username does not exists.", response.error[0])
+        assertEquals(HttpStatus.BAD_REQUEST, exception.status)
+        assertEquals("User does not exist.", response.error[0])
         assertEquals("Amount added to wallet has to be positive.", response.error[1])
     }
 }

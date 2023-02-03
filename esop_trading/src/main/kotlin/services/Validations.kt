@@ -1,76 +1,55 @@
 package services
 
-import io.micronaut.json.tree.JsonObject
 import models.DataStorage
+import models.RegisterInput
 
 class Validations {
     companion object {
-        fun validateBody(body: JsonObject): ArrayList<String> {
+        fun validateRegisterInput(body: RegisterInput): ArrayList<String> {
             val errorList = arrayListOf<String>()
 
-            try {
-                val firstName: Boolean = body.get("firstName").isNull
-                println(firstName)
-            } catch (e: Exception) {
-                errorList.add("firstname is null")
-            }
+            val firstName: String? = body.firstName?.trim()
+            val lastName: String? = body.lastName?.trim()
+            val phoneNumber: String? = body.phoneNumber?.trim()
+            val email: String? = body.emailID?.trim()
+            val username: String? = body.userName?.trim()
 
-            try {
-                val firstName: Boolean = body.get("username").isNull
-                println(firstName)
-            } catch (e: Exception) {
-                errorList.add("username is null")
-            }
+            errorList.addAll(validateFirstName(firstName))
+            errorList.addAll(validateLastName(lastName))
+            errorList.addAll(validatePhoneNumber(phoneNumber))
+            errorList.addAll(validateEmailIds(email))
+            errorList.addAll(validateUserName(username))
 
-            try {
-                val firstName: Boolean = body.get("lastName").isNull
-                println(firstName)
-            } catch (e: Exception) {
-                errorList.add("lastname is null")
-            }
-
-            try {
-                val firstName: Boolean = body.get("email").isNull
-                println(firstName)
-            } catch (e: Exception) {
-                errorList.add("email is null")
-            }
-
-            try {
-                val firstName: Boolean = body.get("phoneNumber").isNull
-                println(firstName)
-            } catch (e: Exception) {
-                errorList.add("phoneNumber is null")
-            }
             return errorList
         }
 
         fun validateFirstName(name: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
             if (name == null) {
+                errorList.add("firstName is missing.")
                 return errorList
             }
+            if (name.length < 3)
+                errorList.add("First name has to be at least three characters.")
 
-            if (name.length < 3) {
-                errorList.add("firstName has to be at least three characters.")
-                return errorList
-            }
-            if (!name.trim().matches(Regex("([A-Za-z]+ ?)+"))) {
-                errorList.add("Invalid firstName. firstName should only contain characters and cannot have more than one continuous space.")
-            }
+            if (!name.matches(Regex("([\\p{L}\\p{M}]+ ?)+")))
+                errorList.add("Invalid first name. First name should only contain characters and cannot have more than one continuous space.")
+
             return errorList
         }
 
         fun validateLastName(name: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
-            if (name == null)
+            if (name == null) {
+                errorList.add("lastName is missing.")
                 return errorList
-            if (name.isEmpty()) {
-                errorList.add("Last name has to be at least one character.")
             }
-            if (!name.matches(Regex("([A-Za-z]+ ?)+"))) {
-                errorList.add("Invalid lastName. lastName should only contain characters and cannot have more than one continuous space.")
-            }
+
+            if (name.isEmpty())
+                errorList.add("Last name cannot be empty.")
+
+            if (!name.matches(Regex("([\\p{L}\\p{M}]+ ?)*")))
+                errorList.add("Invalid last name. Last name should only contain characters and cannot have more than one continuous space.")
 
             return errorList
         }
@@ -78,17 +57,19 @@ class Validations {
         fun validateUserName(username: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
             if (username == null) {
+                errorList.add("userName is missing.")
                 return errorList
             }
-            if (DataStorage.userList.contains(username)) {
+
+            if (DataStorage.userList.contains(username))
                 errorList.add("Username already taken")
-            }
-            if (username.length < 3) {
+
+            if (username.length < 3)
                 errorList.add("Username has to be at least three characters.")
-            }
-            if (!username.matches(Regex("[_\\d]*[A-Za-z][\\w_]*"))) {
+
+            if (!username.matches(Regex("[_\\d]*[\\p{L}\\p{M}][\\w_]*")))
                 errorList.add("Username can only contain characters,numbers and underscores and must have at least one character.")
-            }
+
             return errorList
 
         }
@@ -103,8 +84,10 @@ class Validations {
         fun validateEmailIds(emailId: String?): Collection<String> {
             val errorList = mutableSetOf<String>()
             if (emailId == null) {
+                errorList.add("emailID is missing.")
                 return errorList
             }
+
 
             if (DataStorage.registeredEmails.contains(emailId)) {
                 errorList.add("Email already exists")
@@ -153,11 +136,13 @@ class Validations {
         fun validatePhoneNumber(phoneNumber: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
             if (phoneNumber == null) {
+                errorList.add("phoneNumber is missing.")
                 return errorList
             }
-            if (DataStorage.registeredPhoneNumbers.contains(phoneNumber)) {
+
+            if (DataStorage.registeredPhoneNumbers.contains(phoneNumber))
                 errorList.add("Phone number already exists")
-            }
+
             if (phoneNumber.length < 10) {
                 errorList.add("Invalid phone number. Accepted phoneNumber formats: 10 digits, +{two digit country code} 10 digits, {one/two digit country code} 10 digits")
             }
