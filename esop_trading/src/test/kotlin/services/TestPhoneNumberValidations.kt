@@ -44,14 +44,14 @@ class TestPhoneNumberValidations {
     fun `should not accept phone number less than 10 digit`() {
         val errorList = Validations.validatePhoneNumber("9786385")
         assertEquals(1, errorList.size)
-        assertEquals("Invalid phone number.", errorList[0])
+        assertEquals("Invalid phone number length.", errorList[0])
     }
 
     @Test
     fun `should not accept phone number more than 14 digit`() {
         val errorList = Validations.validatePhoneNumber("123451234567890")
         assertEquals(1,errorList.size)
-        assertEquals("Invalid phone number.", errorList[0])
+        assertEquals("Invalid phone number length.", errorList[0])
     }
 
     @Test
@@ -84,7 +84,7 @@ class TestPhoneNumberValidations {
     fun `return error for trunk code`() {
         val errorList= Validations.validatePhoneNumber("99307708611")
         assertEquals(1,errorList.size)
-        assertEquals("Invalid country code.",errorList[0])
+        assertEquals("Trunk code for phone number cannot be non zero.",errorList[0])
 
     }
 }

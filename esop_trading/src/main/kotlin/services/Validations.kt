@@ -165,12 +165,9 @@ class Validations {
                 return errorList
             }
             val code=countryCode(phoneNumber)
-            if(code.length==1 ){
-                if(code[0]=='0') {
+            if(code.length==1 && code[0]!='0' ){
                     errorList.add(PhoneNumber.TRUNK_ERROR_MESSAGE)
-                }
-                errorList.add(PhoneNumber.COUNTRY_CODE_ERROR_MESSAGE)
-                return errorList
+                    return errorList
             }
             if(code.isNotEmpty() && !code.matches(Regex("\\+?\\d*"))){
                 errorList.add(PhoneNumber.COUNTRY_CODE_ERROR_MESSAGE)
