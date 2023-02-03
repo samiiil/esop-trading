@@ -17,7 +17,7 @@ class TestLastNameValidations {
         val errorList = validateLastName("123")
 
         assertEquals(1, errorList.size)
-        assertEquals("Invalid Last Name. Last Name should only contain characters and cannot have more than one continuous space.", errorList[0])
+        assertEquals("Invalid last name. Last name should only contain characters and cannot have more than one continuous space.", errorList[0])
     }
 
     @Test
@@ -25,7 +25,7 @@ class TestLastNameValidations {
         val errorList = validateLastName("Jake  Peralt   a")
 
         assertEquals(1, errorList.size)
-        assertEquals("Invalid Last Name. Last Name should only contain characters and cannot have more than one continuous space.", errorList[0])
+        assertEquals("Invalid last name. Last name should only contain characters and cannot have more than one continuous space.", errorList[0])
     }
 
     @Test
@@ -46,7 +46,7 @@ class TestLastNameValidations {
         val errorList = validateLastName(null)
 
         assertEquals(1, errorList.size)
-        assertEquals("Last Name is missing.", errorList[0])
+        assertEquals("lastName is missing.", errorList[0])
     }
 
     @Test
@@ -54,6 +54,6 @@ class TestLastNameValidations {
         val errorList = validateLastName("")
 
         assertEquals(1, errorList.size)
-        assertEquals("Last Name cannot be empty.", errorList[0])
+        assertEquals("Last name cannot be empty.", errorList[0])
     }
 }

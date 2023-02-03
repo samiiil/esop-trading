@@ -130,8 +130,8 @@ class WalletControllerTest {
         val response: ErrorResponse =
             mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
 
-        assertEquals(HttpStatus.UNAUTHORIZED, exception.status)
-        assertEquals("Username does not exists.", response.error[0])
+        assertEquals(HttpStatus.BAD_REQUEST, exception.status)
+        assertEquals("User does not exist.", response.error[0])
         assertEquals("Amount added to wallet has to be positive.", response.error[1])
     }
 }
