@@ -1,15 +1,9 @@
 package controller
 
-import com.fasterxml.jackson.core.JsonParseException
 import exception.BadRequestException
-import io.micronaut.core.convert.exceptions.ConversionErrorException
-import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.*
-import io.micronaut.http.hateoas.JsonError
-import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
 import models.*
 import services.Validations
 import services.saveUser
@@ -70,8 +64,7 @@ class EndPoints {
 
     @Post("/user/{userName}/addToWallet")
     fun addToWallet(userName: String, @Body body: AddToWalletInput): HttpResponse<*> {
-        val errorMessages: ArrayList<String> = ArrayList<String>()
-        //Input Parsing
+        val errorMessages: ArrayList<String> = ArrayList()
 
         val response: Map<String, *>
         if (!Validations.validateUser(userName)) {
@@ -95,21 +88,19 @@ class EndPoints {
             return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
         }
 
-        if (amountToBeAdded != null) {
-            val freeMoney = DataStorage.userList[userName]!!.account.wallet.getFreeMoney()
-            val lockedMoney = DataStorage.userList[userName]!!.account.wallet.getLockedMoney()
+        val freeMoney = DataStorage.userList[userName]!!.account.wallet.getFreeMoney()
+        val lockedMoney = DataStorage.userList[userName]!!.account.wallet.getLockedMoney()
 
-            if (((amountToBeAdded + freeMoney + lockedMoney) <= 0) ||
-                ((amountToBeAdded + freeMoney + lockedMoney) > DataStorage.MAX_AMOUNT)
-            ) {
-                errorMessages.add("Amount exceeds maximum wallet limit. Wallet range 0 to ${DataStorage.MAX_AMOUNT}")
-            }
-            if (errorMessages.isNotEmpty()) {
-                response = mapOf("error" to errorMessages)
-                return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
-            }
-            DataStorage.userList[userName]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
+        if (((amountToBeAdded + freeMoney + lockedMoney) <= 0) ||
+            ((amountToBeAdded + freeMoney + lockedMoney) > DataStorage.MAX_AMOUNT)
+        ) {
+            errorMessages.add("Amount exceeds maximum wallet limit. Wallet range 0 to ${DataStorage.MAX_AMOUNT}")
         }
+        if (errorMessages.isNotEmpty()) {
+            response = mapOf("error" to errorMessages)
+            return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
+        }
+        DataStorage.userList[userName]!!.account.wallet.addMoneyToWallet(amountToBeAdded)
 
         response = mapOf("message" to "$amountToBeAdded amount added to account")
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
@@ -289,35 +280,5 @@ class EndPoints {
     fun getFees(): HttpResponse<*> {
         return HttpResponse.status<Any>(HttpStatus.OK)
             .body(mapOf(Pair("TotalFees", DataStorage.TOTAL_FEE_COLLECTED)))
-    }
-
-    @Error
-    fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
-        //handles errors in json syntax
-        val errorMap = mutableMapOf<String, ArrayList<String>>()
-        val error = JsonError("Invalid JSON: ${e.message}")
-        errorMap["error"] = arrayListOf<String>("Invalid JSON: ${e.message}")
-        return HttpResponse.badRequest(errorMap)
-    }
-
-    //for handling missing fields in json input
-    @Error
-    fun handleBadRequest(request: HttpRequest<*>, e: ConversionErrorException): Any {
-        val errorMessages = arrayOf("Add missing fields to the request")
-        val response = mapOf("error" to errorMessages)
-        return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
-    }
-
-    @Error(exception = UnsatisfiedBodyRouteException::class)
-    fun handleEmptyBody(
-        request: HttpRequest<*>,
-        e: UnsatisfiedBodyRouteException
-    ): HttpResponse<Map<String, Array<String>>> {
-        return HttpResponse.badRequest(mapOf("error" to arrayOf("Request body is missing")))
-    }
-
-    @Error(global = true, status = HttpStatus.NOT_FOUND)
-    fun handleInvalidRoute(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
-        return HttpResponse.notFound(ErrorResponse(arrayListOf("Invalid URI - ${request.uri}")))
     }
 }

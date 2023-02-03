@@ -47,8 +47,8 @@ class UserControllerTest {
         DataStorage.buyList.clear()
         DataStorage.sellList.clear()
         DataStorage.performanceSellList.clear()
-        DataStorage.orderId = 0
-        DataStorage.orderExecutionId = 0
+        DataStorage.orderId = 1L
+        DataStorage.orderExecutionId = 1L
     }
 
     @Test
