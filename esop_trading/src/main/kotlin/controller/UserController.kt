@@ -1,6 +1,5 @@
 package controller
 
-import exception.BadRequestException
 import com.fasterxml.jackson.core.JsonParseException
 import exception.ValidationException
 import io.micronaut.core.convert.exceptions.ConversionErrorException
@@ -13,9 +12,9 @@ import models.*
 import services.Validations
 import services.saveUser
 
-@Controller("/")
-class EndPoints {
-    @Post("/user/register")
+@Controller("/user")
+class UserController {
+    @Post("/register")
     fun register(@Body body: RegisterInput): HttpResponse<RegisterResponse> {
         val errorList = arrayListOf<String>()
 
@@ -51,7 +50,7 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.OK).body(res)
     }
 
-    @Post("/user/{userName}/addToWallet")
+    @Post("/{userName}/addToWallet")
     fun addToWallet(userName: String, @Body body: AddToWalletInput): HttpResponse<*> {
         val errorMessages: ArrayList<String> = ArrayList()
 
@@ -95,7 +94,7 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 
-    @Post("/user/{userName}/addToInventory")
+    @Post("/{userName}/addToInventory")
     fun addToInventory(userName: String, @Body body: AddToInventoryInput): HttpResponse<*> {
 
         //Input Parsing
@@ -155,7 +154,7 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 
-    @Get("/user/{userName}/accountInformation")
+    @Get("/{userName}/accountInformation")
     fun accountInformation(userName: String): HttpResponse<*> {
 
         val errorMessages: ArrayList<String> = ArrayList()
@@ -192,7 +191,7 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
     }
 
-    @Post("/user/{userName}/createOrder")
+    @Post("/{userName}/createOrder")
     fun createOrder(userName: String, @Body body: CreateOrderInput): HttpResponse<*> {
         val errorMessages: ArrayList<String> = ArrayList()
 
@@ -241,7 +240,7 @@ class EndPoints {
         return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(res)
     }
 
-    @Get("/user/{userName}/orderHistory")
+    @Get("/{userName}/orderHistory")
     fun orderHistory(userName: String): HttpResponse<*> {
         val errorMessages: ArrayList<String> = ArrayList()
 
@@ -260,51 +259,5 @@ class EndPoints {
         }
         response = DataStorage.userList[userName]!!.getOrderDetails()
         return HttpResponse.status<Any>(HttpStatus.OK).body(response)
-    }
-
-    @Get("/fees")
-    fun getFees(): HttpResponse<*> {
-        return HttpResponse.status<Any>(HttpStatus.OK)
-            .body(mapOf(Pair("TotalFees", DataStorage.TOTAL_FEE_COLLECTED)))
-    }
-
-    @Error
-    fun handleJsonSyntaxError(request: HttpRequest<*>, e: JsonParseException): MutableHttpResponse<out Any>? {
-        //handles errors in json syntax
-        val errorMap = mutableMapOf<String, ArrayList<String>>()
-        errorMap["error"] = arrayListOf("Invalid JSON: ${e.message}")
-        return HttpResponse.badRequest(errorMap)
-    }
-
-    //for handling missing fields in json input
-    @Error
-    fun handleBadRequest(request: HttpRequest<*>, e: ConversionErrorException): Any {
-        val errorMessages = arrayOf("Add missing fields to the request")
-        val response = mapOf("error" to errorMessages)
-        return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
-    }
-
-    @Error(exception = UnsatisfiedBodyRouteException::class)
-    fun handleEmptyBody(
-        request: HttpRequest<*>,
-        e: UnsatisfiedBodyRouteException
-    ): HttpResponse<Map<String, Array<String>>> {
-        return HttpResponse.badRequest(mapOf("error" to arrayOf("Request body is missing")))
-    }
-
-    @Error(global = true, status = HttpStatus.NOT_FOUND)
-    fun handleInvalidRoute(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
-        return HttpResponse.notFound(ErrorResponse(arrayListOf("Invalid URI - ${request.uri}")))
-    }
-
-    @Error(global = true, status = HttpStatus.METHOD_NOT_ALLOWED)
-    fun handleWrongHttpMethod(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
-        val response = ErrorResponse(arrayListOf("${request.method} method is not allowed for ${request.uri}."))
-        return HttpResponse.notAllowed<ErrorResponse>().body(response)
-    }
-
-    @Error(global = true, exception = ValidationException::class)
-    fun handleCustomErrors(exception: ValidationException) : HttpResponse<ErrorResponse>{
-        return HttpResponse.badRequest(exception.errorResponse)
     }
 }

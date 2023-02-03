@@ -1,7 +1,7 @@
 package controller
 
 import com.fasterxml.jackson.core.JsonParseException
-import exception.BadRequestException
+import exception.ValidationException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -33,8 +33,8 @@ class ErrorHandlerController {
             .body(ErrorResponse("${request.method} method is not allowed for ${request.uri}."))
     }
 
-    @Error(global = true, exception = BadRequestException::class)
-    fun handleCustomErrors(exception: BadRequestException): HttpResponse<ErrorResponse> {
+    @Error(global = true, exception = ValidationException::class)
+    fun handleCustomErrors(exception: ValidationException): HttpResponse<ErrorResponse> {
         return HttpResponse.badRequest(exception.errorResponse)
     }
 }
