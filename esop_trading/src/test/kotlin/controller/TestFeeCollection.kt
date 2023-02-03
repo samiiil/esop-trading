@@ -23,10 +23,10 @@ class TestFeeCollection {
     @BeforeEach
     fun setUp() {
         val buyer = User("jake", "Jake", "Peralta", "9844427549", "jake@gmail.com") //Buyer
-        buyer.account.wallet.addMoneyToWallet(10000)
+        buyer.addMoneyToWallet(10000)
         val seller = User("amy", "Amy", "Santiago", "9472919384", "amy@gmail.com") //Seller
-        seller.account.inventory.addEsopToInventory(100, "NON-PERFORMANCE")
-        seller.account.inventory.addEsopToInventory(100, "PERFORMANCE")
+        seller.addEsopToInventory(100, "NON-PERFORMANCE")
+        seller.addEsopToInventory(100, "PERFORMANCE")
         saveUser(buyer)
         saveUser(seller)
     }
@@ -55,8 +55,8 @@ class TestFeeCollection {
 
     @Test
     fun `total fee should be 2 percent of total transaction`() {
-        DataStorage.userList["jake"]!!.addOrder(1,"BUY", 100)
-        DataStorage.userList["amy"]!!.addOrder(1,"SELL",100)
+        DataStorage.userList["jake"]!!.addOrderToExecutionQueue(1,"BUY", 100)
+        DataStorage.userList["amy"]!!.addOrderToExecutionQueue(1,"SELL",100)
         val request = HttpRequest.GET<FeeResponse>("/fees")
 
         val response = client.toBlocking().retrieve(request, FeeResponse::class.java)
@@ -66,8 +66,8 @@ class TestFeeCollection {
 
     @Test
     fun `total fee should be rounded and not floored`() {
-        DataStorage.userList["jake"]!!.addOrder(1,"BUY", 30)
-        DataStorage.userList["amy"]!!.addOrder(1,"SELL",30)
+        DataStorage.userList["jake"]!!.addOrderToExecutionQueue(1,"BUY", 30)
+        DataStorage.userList["amy"]!!.addOrderToExecutionQueue(1,"SELL",30)
         val request = HttpRequest.GET<FeeResponse>("/fees")
 
         val response = client.toBlocking().retrieve(request, FeeResponse::class.java)
