@@ -1,6 +1,7 @@
 package models
 import services.BuyOrderingComparator
 import services.SellOrderingComparator
+import java.math.BigInteger
 import java.util.*
 
 class DataStorage {
@@ -19,6 +20,6 @@ class DataStorage {
         const val COMMISSION_FEE_PERCENTAGE = 2.0F
         const val MAX_AMOUNT = 10_000_000
         const val MAX_QUANTITY = 10_000_000
-        var TOTAL_FEE_COLLECTED = 0L
+        var TOTAL_FEE_COLLECTED: BigInteger = BigInteger.valueOf(0)
     }
 }
