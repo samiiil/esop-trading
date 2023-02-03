@@ -161,22 +161,24 @@ class Validations {
                 return errorList
             }
             if (phoneNumber.length < 10 || phoneNumber.length>14) {
-                errorList.add(PhoneNumber.INVALID_ERROR_MESSAGE)
+                errorList.add(PhoneNumber.INVALID_LENGTH_ERROR_MESSAGE)
                 return errorList
             }
             val code=countryCode(phoneNumber)
-            if(code.length==1 && code[0]!='0'){
-                errorList.add(PhoneNumber.TRUNK_ERROR_MESSAGE)
+            if(code.length==1 ){
+                if(code[0]=='0') {
+                    errorList.add(PhoneNumber.TRUNK_ERROR_MESSAGE)
+                }
+                errorList.add(PhoneNumber.COUNTRY_CODE_ERROR_MESSAGE)
                 return errorList
             }
             if(code.isNotEmpty() && !code.matches(Regex("\\+?\\d*"))){
                 errorList.add(PhoneNumber.COUNTRY_CODE_ERROR_MESSAGE)
                 return errorList
-            }else{
-                val number=phoneNumber.subSequence(code.length,phoneNumber.length)
-                if(!number.matches(Regex("\\d*"))){
-                    errorList.add(PhoneNumber.NON_NUMERICAL_ERROR_MESSAGE)
-                }
+            }
+            val number=phoneNumber.subSequence(code.length,phoneNumber.length)
+            if(!number.matches(Regex("\\d*"))){
+                errorList.add(PhoneNumber.NON_NUMERICAL_ERROR_MESSAGE)
             }
             return errorList
         }

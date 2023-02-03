@@ -72,4 +72,19 @@ class TestPhoneNumberValidations {
         assertEquals(1,errorList.size)
         assertEquals("Invalid country code.",errorList[0])
     }
+
+    @Test
+    fun `should return error if country code is wrong but number is valid`() {
+        val errorList= Validations.validatePhoneNumber("-1129307708611")
+        assertEquals(1,errorList.size)
+        assertEquals("Invalid country code.",errorList[0])
+    }
+
+    @Test
+    fun `return error for trunk code`() {
+        val errorList= Validations.validatePhoneNumber("99307708611")
+        assertEquals(1,errorList.size)
+        assertEquals("Invalid country code.",errorList[0])
+
+    }
 }
