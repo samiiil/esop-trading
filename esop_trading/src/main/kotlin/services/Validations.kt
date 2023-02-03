@@ -11,8 +11,8 @@ class Validations {
             val firstName: String? = body.firstName?.trim()
             val lastName: String? = body.lastName?.trim()
             val phoneNumber: String? = body.phoneNumber?.trim()
-            val email: String? = body.email?.trim()
-            val username: String? = body.username?.trim()
+            val email: String? = body.emailID?.trim()
+            val username: String? = body.userName?.trim()
 
             errorList.addAll(validateFirstName(firstName))
             errorList.addAll(validateLastName(lastName))
@@ -26,14 +26,14 @@ class Validations {
         fun validateFirstName(name: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
             if (name == null) {
-                errorList.add("First Name is missing.")
+                errorList.add("firstName is missing.")
                 return errorList
             }
             if (name.length < 3)
-                errorList.add("First Name has to be at least three characters.")
+                errorList.add("First name has to be at least three characters.")
 
             if (!name.matches(Regex("([\\p{L}\\p{M}]+ ?)+")))
-                errorList.add("Invalid First Name. First Name should only contain characters and cannot have more than one continuous space.")
+                errorList.add("Invalid first name. First name should only contain characters and cannot have more than one continuous space.")
 
             return errorList
         }
@@ -41,15 +41,15 @@ class Validations {
         fun validateLastName(name: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
             if (name == null) {
-                errorList.add("Last Name is missing.")
+                errorList.add("lastName is missing.")
                 return errorList
             }
 
             if (name.isEmpty())
-                errorList.add("Last Name cannot be empty.")
+                errorList.add("Last name cannot be empty.")
 
             if (!name.matches(Regex("([\\p{L}\\p{M}]+ ?)*")))
-                errorList.add("Invalid Last Name. Last Name should only contain characters and cannot have more than one continuous space.")
+                errorList.add("Invalid last name. Last name should only contain characters and cannot have more than one continuous space.")
 
             return errorList
         }
@@ -57,7 +57,7 @@ class Validations {
         fun validateUserName(username: String?): ArrayList<String> {
             val errorList = arrayListOf<String>()
             if (username == null) {
-                errorList.add("username is missing.")
+                errorList.add("userName is missing.")
                 return errorList
             }
 
@@ -84,7 +84,7 @@ class Validations {
         fun validateEmailIds(emailId: String?): Collection<String> {
             val errorList = mutableSetOf<String>()
             if (emailId == null) {
-                errorList.add("email is missing.")
+                errorList.add("emailID is missing.")
                 return errorList
             }
 

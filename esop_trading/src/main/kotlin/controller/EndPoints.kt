@@ -14,22 +14,6 @@ class EndPoints {
     fun register(@Body body: RegisterInput): HttpResponse<RegisterResponse> {
         val errorList = arrayListOf<String>()
 
-        if (body.firstName == null) {
-            errorList.add("firstName is missing.")
-        }
-        if (body.lastName == null) {
-            errorList.add("lastName is missing.")
-        }
-        if (body.phoneNumber == null) {
-            errorList.add("phoneNumber is missing.")
-        }
-        if (body.emailID == null) {
-            errorList.add("email is missing.")
-        }
-        if (body.userName == null) {
-            errorList.add("userName is missing.")
-        }
-
         val firstName: String? = body.firstName?.trim()
         val lastName: String? = body.lastName?.trim()
         val phoneNumber: String? = body.phoneNumber?.trim()

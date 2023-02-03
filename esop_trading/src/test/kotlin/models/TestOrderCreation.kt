@@ -231,7 +231,6 @@ class TestOrderCreation {
 
         assertEquals(1, orderDetails.size)
         assert(orderDetails.keys.contains("order_history"))
-        println(orderDetails["order_history"])
         assertEquals(
             "{order_id=1, quantity=2, type=BUY, price=100, partially_filled=[{price=100, quantity=1}], unfilled=[{price=100, quantity=1}]}",
             orderDetails["order_history"]!![0].toString()

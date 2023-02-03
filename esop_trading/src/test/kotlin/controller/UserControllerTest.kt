@@ -85,7 +85,7 @@ class UserControllerTest {
         assertEquals("firstName is missing.", errorResponse.error[0])
         assertEquals("lastName is missing.", errorResponse.error[1])
         assertEquals("phoneNumber is missing.", errorResponse.error[2])
-        assertEquals("email is missing.", errorResponse.error[3])
+        assertEquals("emailID is missing.", errorResponse.error[3])
         assertEquals("userName is missing.", errorResponse.error[4])
     }
 
