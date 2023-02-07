@@ -18,7 +18,8 @@ import org.junit.jupiter.api.Test
 import services.saveUser
 
 @MicronautTest
-class WalletControllerTest {
+class
+WalletControllerTest {
 
     @Inject
     @field:Client("/")
@@ -93,8 +94,8 @@ class WalletControllerTest {
         val response: ErrorResponse =
             mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
 
-        assertEquals(HttpStatus.UNAUTHORIZED, exception.status)
-        assertEquals("Username does not exists.", response.error[0])
+        assertEquals(HttpStatus.NOT_FOUND, exception.status)
+        assertEquals("User does not exist", response.error[0])
 
     }
 
@@ -116,22 +117,5 @@ class WalletControllerTest {
             "Amount exceeds maximum wallet limit. Wallet range 0 to ${DataStorage.MAX_AMOUNT}",
             response.error[0]
         )
-    }
-
-    @Test
-    fun shouldGiveBothErrorsWhenInvalidUserGivesInvalidInput() {
-        val amountToBeAdded = -10
-        val request: HttpRequest<Any> = HttpRequest.POST("/user/user2/addToWallet", AddToWalletInput(amountToBeAdded))
-
-        val exception = assertThrows(HttpClientResponseException::class.java) {
-            client.toBlocking().retrieve(request)
-        }
-
-        val response: ErrorResponse =
-            mapper.readValue(exception.response.body()!!.toString(), ErrorResponse::class.java)
-
-        assertEquals(HttpStatus.BAD_REQUEST, exception.status)
-        assertEquals("User does not exist.", response.error[0])
-        assertEquals("Amount added to wallet has to be positive.", response.error[1])
     }
 }

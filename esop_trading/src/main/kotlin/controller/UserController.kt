@@ -1,13 +1,10 @@
 package controller
 
-import com.fasterxml.jackson.core.JsonParseException
+import exception.UserNotFoundException
 import exception.ValidationException
-import io.micronaut.core.convert.exceptions.ConversionErrorException
-import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.*
-import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
 import models.*
 import services.Validations
 import services.saveUser
@@ -71,9 +68,9 @@ class UserController {
 
         if (errorMessages.isNotEmpty()) {
             response = mapOf("error" to errorMessages)
-            if (errorMessages[0] == "UserName does not exists.")
-                return HttpResponse.status<Any>(HttpStatus.UNAUTHORIZED).body(response)
-            return HttpResponse.status<Any>(HttpStatus.BAD_REQUEST).body(response)
+            if (errorMessages[0] == "UserName does not exist.")
+                throw UserNotFoundException(ErrorResponse("User does not exist"))
+            return HttpResponse.badRequest(response)
         }
 
         val freeMoney = DataStorage.userList[userName]!!.getFreeMoney()
