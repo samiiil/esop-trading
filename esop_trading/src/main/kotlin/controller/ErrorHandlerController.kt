@@ -1,12 +1,14 @@
 package controller
 
 import com.fasterxml.jackson.core.JsonParseException
+import exception.UserNotFoundException
 import exception.ValidationException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
+import io.micronaut.json.tree.JsonObject
 import io.micronaut.web.router.exceptions.UnsatisfiedBodyRouteException
 import models.ErrorResponse
 
@@ -27,6 +29,10 @@ class ErrorHandlerController {
         return HttpResponse.notFound(ErrorResponse("Invalid URI - ${request.uri}"))
     }
 
+    @Error(global = true, exception = UserNotFoundException::class)
+    fun handleUserNotFound(exception: UserNotFoundException): HttpResponse<ErrorResponse>{
+        return HttpResponse.notFound(exception.errorResponse)
+    }
     @Error(global = true, status = HttpStatus.METHOD_NOT_ALLOWED)
     fun handleWrongHttpMethod(request: HttpRequest<*>): HttpResponse<ErrorResponse> {
         return HttpResponse.notAllowed<ErrorResponse>()
