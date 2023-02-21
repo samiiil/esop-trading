@@ -30,7 +30,7 @@ dependencies {
 
 
 application {
-    mainClass.set("com.example.ApplicationKt")
+    mainClass.set("ApplicationKt")
 }
 java {
     sourceCompatibility = JavaVersion.toVersion("17")
