@@ -36,4 +36,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: esop-trading-1.0
-          path: build/libs/esop-0.1-all.jar
+          path: build/libs/esop_0.1-all.jar
