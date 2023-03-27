@@ -1,4 +1,4 @@
-name: Test Build Deployy
+name: Test Build Deploy
 
 on:
   push:
@@ -17,6 +17,8 @@ jobs:
         with:
           distribution: corretto
           java-version: 17
+      - name: Checking s
+        run: ls
       - name: Test
         run: ./gradlew test
 
